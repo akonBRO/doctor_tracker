@@ -5,9 +5,8 @@ import '@fontsource-variable/manrope';
 import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title: { default: 'Doctor Tracker — A clearer view of care', template: '%s | Doctor Tracker' },
-  description:
-    'A considered workspace for doctor and patient administration. Secure access, clear organization, and room to focus.',
+  title: { default: 'Doctor Tracker', template: '%s | Doctor Tracker' },
+  description: 'Doctor and patient records for practice administrators.',
   robots: { index: false, follow: false },
 };
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

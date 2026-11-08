@@ -4,7 +4,7 @@ export const normalizeDoctorText = (value: string) =>
   value.trim().normalize('NFKC').replace(/\s+/gu, ' ');
 export const doctorKey = (value: string) => normalizeDoctorText(value).toLowerCase();
 export const doctorWords = (value: string) => doctorKey(value).match(/[\p{L}\p{M}\p{N}]+/gu) ?? [];
-const text = (label: string, max: number) =>
+export const registryText = (label: string, max: number) =>
   z
     .string()
     .max(max + 100, `${label} is too long.`)
@@ -24,9 +24,9 @@ const text = (label: string, max: number) =>
         ),
     );
 export const doctorInputSchema = z.strictObject({
-  name: text('Doctor name', 120),
-  specialization: text('Specialization', 100),
-  hospital: text('Hospital name', 160),
+  name: registryText('Doctor name', 120),
+  specialization: registryText('Specialization', 100),
+  hospital: registryText('Hospital name', 160),
   phone: z
     .string()
     .trim()

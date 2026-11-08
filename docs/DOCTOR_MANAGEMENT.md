@@ -1,6 +1,6 @@
 # Doctor management — Stage 2
 
-Doctor records are administrative data. They do not create login accounts. The application remains one independent Next.js frontend and one standalone Express REST API backed by MongoDB. Patient management and dashboard analytics are not implemented in this stage.
+Doctor records are administrative data. They do not create login accounts. The application remains one independent Next.js frontend and one standalone Express REST API backed by MongoDB. The Stage 2 doctor contracts are retained. Stage 3 adds real patient management beneath doctor details; dashboard analytics remain future work.
 
 ## Routes and public API contract
 
@@ -91,9 +91,9 @@ The existing typed fetch client is extended, rather than replaced. API responses
 
 Meaningful state lives in URL search parameters. Native History API calls integrate with Next.js routing: text changes replace the current entry, while date/sort/page changes push entries. Back/forward, refresh, shareable internal links, and validated directory return links work. Changing criteria resets page one; resetting filters preserves valid sort/page-size preferences. Search/suggestion requests debounce for 300 ms, use AbortController, and ignore responses from obsolete requests. Retry changes only the current read, not the filter values.
 
-The table becomes structured stacked records on tablet/narrow screens. Inputs, pagination, Add Doctor and detail actions remain available at 1440, 768, 375 and 320 pixels. Add Doctor uses a dedicated route, controlled fields, inline errors, focused validation, immediate duplicate-submit protection, pending feedback, deliberate discard/cancel handling, and a browser unload guard. Form entries survive service/session errors. Expired-access restoration happens before a write; a submitted mutation is never automatically replayed. Re-login can occur in a new tab while keeping the form open. If a network failure makes a write outcome uncertain, the UI asks the administrator to check the directory before resubmitting; server-side idempotency keys are not introduced in this stage.
+The table becomes structured stacked records on tablet/narrow screens. Inputs, pagination, Add Doctor and detail actions remain available at 1440, 1024, 768, 375 and 320 pixels. Add Doctor uses a dedicated route, controlled fields, inline errors, focused validation, immediate duplicate-submit protection, pending feedback, deliberate discard/cancel handling, and a browser unload guard. Form entries survive service/session errors. Expired-access restoration happens before a write; a submitted mutation is never automatically replayed. Re-login can occur in a new tab while keeping the form open. If a network failure makes a write outcome uncertain, the UI asks the administrator to check the directory before resubmitting; server-side idempotency keys are not introduced in this stage.
 
-The list distinguishes loading, a genuinely empty directory, no matches, out-of-range pages, and safe service/validation errors. Details distinguish invalid links, absent records, unavailable service and authorization failures. Doctor text is escaped by React, including link labels. No raw HTML is rendered. Route/header/sidebar identity and original branding are retained.
+The list distinguishes loading, a genuinely empty directory, no matches, out-of-range pages, and safe service/validation errors. Details distinguish invalid links, absent records, unavailable service and authorization failures. Doctor text is escaped by React, including link labels. No raw HTML is rendered. The Stage 3 shell, typography and record layouts replace the prior presentation; logo geometry and route behavior remain.
 
 ## Verification and local execution
 
@@ -124,13 +124,10 @@ npm run test:e2e
 
 Set `E2E_WEB_MODE=development` to exercise the same suite in Next.js development/Strict Mode. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for actual completed checks rather than assuming a command above has been run.
 
-## Stage 3 patient integration contract — not implemented
+## Stage 3 patient integration - implemented
 
-- Keep `Doctor._id` as the parent identifier. Add a real Patient model with its own `_id` and a required, indexed `doctorId: ObjectId` reference to Doctor. Patients and doctors remain managed records, not login identities.
-- Integrate a doctor-scoped patient feature beneath the existing detail panel. Replace the explicit unavailable-feature message only when actual endpoints and persistence exist. A zero count is valid only after querying the real Patient collection.
-- Planned REST integration: `GET /api/v1/doctors/:doctorId/patients` for paginated reads and `POST` at the same path for creation. The authenticated parent URL supplies the relationship; do not trust a conflicting body doctor ID.
-- Planned removal: `/api/v1/doctors/:doctorId/patients/:patientId`, with both IDs validated and the patient query scoped to `{ _id: patientId, doctorId }`. Stage 3 must define whether removal deletes or reassigns the record and preserve referential integrity; it must not silently orphan patients.
-- Future dedicated patient endpoints must reuse the same verified-admin middleware, Origin/CSRF policy, strict schemas, query budgets, public DTOs and error envelope. Every doctor-scoped operation must verify the parent exists and the patient belongs to that parent.
-- Current administrators share one workspace and may manage all its doctor records. No speculative owner/tenant fields are added. If workspace tenancy is later introduced, scope every doctor/patient query and migrate existing data before allowing cross-workspace use.
+Doctor details now query real paginated Patient records using the validated parent ID, show the actual count, and expose Add patient plus permanent scoped deletion. The global patient directory link preserves `doctorId`. Both IDs must match for nested deletion; an invalid/missing doctor never falls back to global records. Doctor bodies and existing directory contracts are unchanged.
 
-No Patient model, patient API, patient count, clinical data fixture, doctor edit/delete operation, or analytics engine is shipped by Stage 2. Production Atlas/HTTPS/proxy validation, persistent storage provisioning, multi-instance shared rate stores and deployment remain separate operational work.
+See [PATIENT_MANAGEMENT.md](PATIENT_MANAGEMENT.md) for exact routes, schema, immutable assignments, deletion semantics, query budgets and security. The Stage 3 redesign restyles all Doctor pages and replaces the prior unavailable patient placeholder. The symbol geometry and Stage 2 URL/filter/form behavior remain.
+
+Doctor editing/deletion and analytics are outside this stage. Administrators share one workspace; future tenancy must scope both Doctor and Patient queries consistently. Atlas connectivity is verified read-only; deployment, HTTPS/proxy operational checks and multi-instance shared rate stores remain future work.

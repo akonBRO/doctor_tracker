@@ -1,246 +1,76 @@
-import Link from 'next/link';
-import {
-  ArrowDown,
-  ArrowUpRight,
-  ArrowRight,
-  ShieldCheck,
-  Stethoscope,
-  UsersRound,
-  ChartNoAxesCombined,
-  LockKeyhole,
-  KeyRound,
-  Check,
-} from 'lucide-react';
+﻿import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { Brand } from '../components/brand';
-
 export default function Home() {
   return (
-    <>
-      <header className="site-header wrap">
+    <div className="public-page">
+      <header className="public-header">
         <Brand />
         <nav aria-label="Main navigation">
-          <a href="#approach">The workspace</a>
-          <a href="#security">Built on trust</a>
+          <a href="#records">About the registry</a>
+          <Link href="/login" className="button">
+            Log in <ArrowRight size={18} />
+          </Link>
         </nav>
-        <div className="header-actions">
-          <Link href="/login" className="text-link">
-            Log in <ArrowUpRight size={15} />
-          </Link>
-          <Link href="/signup" className="button button-small">
-            Get started <ArrowRight size={15} />
-          </Link>
-        </div>
       </header>
       <main id="main">
-        <section className="hero wrap">
-          <div className="hero-copy">
-            <p className="eyebrow">
-              <span className="tiny-line" /> THE ADMINISTRATIVE SIDE OF CARE
-            </p>
-            <h1>
-              Less scattered.
-              <br />
-              More <em>connected.</em>
-            </h1>
-            <p className="hero-description">
-              A clearer workspace for the people behind patient care. Bring your doctors, patients,
-              and day-to-day administration into focus.
-            </p>
-            <div className="hero-actions">
-              <Link href="/login" className="button">
-                Enter your workspace <ArrowUpRight size={19} />
-              </Link>
-              <a href="#approach" className="quiet-link">
-                Take a closer look <ArrowDown size={16} />
-              </a>
-            </div>
-            <p className="access-note">
-              <LockKeyhole size={13} /> Invitation-only access. Authenticator-protected accounts.
-            </p>
-          </div>
-          <div
-            className="care-map"
-            aria-label="An illustrative map showing doctors and patients connected in one workspace"
-          >
-            <div className="map-top">
-              <span className="eyebrow">A MORE CONNECTED PRACTICE</span>
-              <span className="map-index">FIG. 01</span>
-            </div>
-            <div className="map-canvas">
-              <div className="map-orbit orbit-outer" />
-              <div className="map-orbit orbit-inner" />
-              <div className="map-cross cross-horizontal" />
-              <div className="map-cross cross-vertical" />
-              <div className="map-node node-doctors">
-                <span className="map-node-icon">
-                  <Stethoscope size={20} />
-                </span>
-                <span>
-                  <strong>Doctors</strong>
-                  <small>Your care network</small>
-                </span>
-              </div>
-              <div className="map-center">
-                <svg viewBox="0 0 40 40" width="57" height="57" fill="none" aria-hidden="true">
-                  <path
-                    d="M11 7h10c9 0 14 5 14 13s-5 13-14 13H11V7Z"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  />
-                  <path
-                    d="M5 20h10l4-7 5 14 4-7h7"
-                    stroke="currentColor"
-                    strokeWidth="2.3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="5" cy="20" r="3" fill="currentColor" />
-                </svg>
-                <span>One clear view</span>
-              </div>
-              <div className="map-node node-patients">
-                <span className="map-node-icon">
-                  <UsersRound size={20} />
-                </span>
-                <span>
-                  <strong>Patients</strong>
-                  <small>Connected to their doctor</small>
-                </span>
-              </div>
-              <span className="map-annotation annotation-left">ORGANIZE</span>
-              <span className="map-annotation annotation-right">UNDERSTAND</span>
-              <div className="map-tick tick-one" />
-              <div className="map-tick tick-two" />
-            </div>
-            <div className="map-bottom">
-              <span>
-                <span className="status-dot" /> Thoughtfully organized. Secure by design.
-              </span>
-              <span className="map-caption">CONCEPTUAL WORKSPACE</span>
-            </div>
-          </div>
-        </section>
-        <div className="principles wrap">
-          <p>
-            Made for the work
+        <section className="public-hero">
+          <p className="eyebrow">DOCTOR & PATIENT REGISTRY</p>
+          <h1>
+            A place for every record.
             <br />
-            <strong>that supports care.</strong>
+            <span>A clear way to find it.</span>
+          </h1>
+          <p className="hero-description">
+            Keep doctor details and patient records together in one administrative workspace.
           </p>
-          <span>
-            <Check size={16} /> Clear organization
-          </span>
-          <span>
-            <Check size={16} /> Considered workflows
-          </span>
-          <span>
-            <Check size={16} /> Protected access
-          </span>
-        </div>
-        <section id="approach" className="overview wrap">
-          <div className="section-intro">
-            <p className="eyebrow">01 / THE WORKSPACE</p>
-            <h2>
-              Everything in context.
-              <br />
-              Nothing in the way.
-            </h2>
-            <p>
-              A focused foundation for your practice’s records.
-              <br className="desktop-break" /> Built around three connected areas.
-            </p>
-          </div>
-          <div className="capabilities">
-            {[
-              {
-                n: '01',
-                icon: Stethoscope,
-                title: 'The people providing care',
-                description:
-                  'An organized home for doctor profiles and their corresponding patients.',
-                label: 'DOCTOR DIRECTORY',
-              },
-              {
-                n: '02',
-                icon: UsersRound,
-                title: 'Every patient, connected',
-                description:
-                  'Patient records with a clear connection to the doctor responsible for their care.',
-                label: 'PATIENT RECORDS',
-              },
-              {
-                n: '03',
-                icon: ChartNoAxesCombined,
-                title: 'A more useful perspective',
-                description:
-                  'A dedicated place for understanding your practice through meaningful information.',
-                label: 'PRACTICE OVERVIEW',
-              },
-            ].map((item) => (
-              <article key={item.n}>
-                <div className="capability-number">
-                  {item.n}
-                  <item.icon size={23} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="eyebrow">{item.label}</p>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </div>
-              </article>
-            ))}
-            <p className="scope-note">
-              Doctor, patient, and reporting tools are being developed. Secure account access is
-              available now.
-            </p>
+          <div className="hero-actions">
+            <Link href="/login" className="button">
+              Log in <ArrowRight size={18} />
+            </Link>
+            <Link href="/signup" className="text-link">
+              Have an invitation?
+            </Link>
           </div>
         </section>
-        <section id="security" className="security-section">
-          <div className="wrap security-inner">
-            <div>
-              <p className="eyebrow">02 / BUILT ON TRUST</p>
-              <h2>
-                Care starts
-                <br />
-                with confidence.
-              </h2>
-              <p>
-                Access is intentional. Every administrator joins by invitation and verifies their
-                identity with an authenticator.
-              </p>
-              <Link href="/signup" className="light-link">
-                Have an invitation? Set up your account <ArrowUpRight size={17} />
-              </Link>
-            </div>
-            <div className="security-details">
+        <section id="records" className="public-records">
+          <div>
+            <p className="eyebrow">THE WORKSPACE</p>
+            <h2>
+              Find the details.
+              <br />
+              Continue the work.
+            </h2>
+          </div>
+          <div className="capability-list">
+            <article>
+              <span>01</span>
               <div>
-                <span className="security-icon">
-                  <KeyRound size={21} />
-                </span>
-                <div>
-                  <h3>An invitation, not an open door.</h3>
-                  <p>Single-use invitations keep administrative access in the right hands.</p>
-                </div>
+                <h3>Doctor directory</h3>
+                <p>
+                  Find a doctor by name, specialization or hospital. Open their practice details and
+                  assigned patients.
+                </p>
               </div>
+            </article>
+            <article>
+              <span>02</span>
               <div>
-                <span className="security-icon">
-                  <ShieldCheck size={21} />
-                </span>
-                <div>
-                  <h3>A second layer of certainty.</h3>
-                  <p>
-                    Authenticator verification is required before every new sign-in is complete.
-                  </p>
-                </div>
+                <h3>Patient records</h3>
+                <p>
+                  Add a patient under their doctor. Search the registry, update a condition and
+                  manage each record.
+                </p>
               </div>
-            </div>
+            </article>
           </div>
         </section>
       </main>
-      <footer className="site-footer wrap">
+      <footer className="public-footer">
         <Brand />
-        <p>A clearer view of care.</p>
-        <span>Doctor Tracker © {new Date().getFullYear()}</span>
+        <span>Practice administration</span>
+        <Link href="/signup">Create an account with an invitation</Link>
       </footer>
-    </>
+    </div>
   );
 }

@@ -10,6 +10,7 @@ import { totpSchema, recoverySchema } from '@doctor-tracker/shared';
 import type { Config } from './config/env.js';
 import { AuthService } from './services/auth.js';
 import { doctorRoutes } from './routes/doctors.js';
+import { patientRoutes } from './routes/patients.js';
 import { AppError } from './utils/errors.js';
 import { hashPassword, hashToken, randomToken } from './utils/security.js';
 import {
@@ -58,7 +59,7 @@ export async function createApp(config: Config) {
         );
       },
       credentials: true,
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
       allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
     }),
   );
@@ -161,6 +162,7 @@ export async function createApp(config: Config) {
     res.json({ data: { admin: await auth.authenticate(req) } });
   });
   app.use('/api/v1/auth', router);
+  app.use('/api/v1', patientRoutes(auth));
   app.use('/api/v1/doctors', doctorRoutes(auth));
   app.use((_req, _res, next) =>
     next(new AppError(404, 'NOT_FOUND', 'This endpoint does not exist.')),

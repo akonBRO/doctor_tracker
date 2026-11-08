@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Check, UsersRound } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { doctorIdSchema, type Doctor } from '@doctor-tracker/shared';
+import { DoctorPatients } from '../patients/patients';
 import { ApiError } from '../../lib/api';
 import { useDoctorQuery } from './use-doctor-query';
 import { directoryReturn, doctorDate } from './helpers';
@@ -74,16 +75,7 @@ export function DoctorDetailPage({ doctorId }: { doctorId: string }) {
                 </div>
               </dl>
             </section>
-            <section className="doctor-patient-foundation">
-              <UsersRound size={23} strokeWidth={1.5} />
-              <div>
-                <h2>Patients</h2>
-                <p>
-                  Patient records for this doctor will be available in a future update. Patient
-                  management is not available yet.
-                </p>
-              </div>
-            </section>
+            <DoctorPatients doctor={record} />
           </>
         )
       )}

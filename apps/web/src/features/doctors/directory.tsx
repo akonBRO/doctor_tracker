@@ -54,9 +54,9 @@ export function DoctorDirectoryPage() {
     <div className="doctors-feature">
       <div className="doctor-page-heading">
         <div>
-          <p className="eyebrow">CARE NETWORK</p>
+          <p className="eyebrow">DOCTOR REGISTRY</p>
           <h1>Doctors</h1>
-          <p>Your doctor directory, with the details that keep care connected.</p>
+          <p>Practice details and patient records.</p>
         </div>
         <Link className="button" href={`/doctors/new?returnTo=${encodeURIComponent(returnTo)}`}>
           <Plus size={17} /> Add Doctor
@@ -165,7 +165,7 @@ export function DoctorDirectoryPage() {
                   ? 'This page has no records'
                   : hasFilters
                     ? 'No matching doctors'
-                    : 'Your doctor directory starts here'}
+                    : 'No doctors yet'}
               </h2>
               <p>
                 {data.pagination.totalItems

@@ -4,7 +4,7 @@ export default function NotFound() {
     <main id="main" className="session-state">
       <div>
         <p className="eyebrow">404 / PAGE NOT FOUND</p>
-        <h1>A little off the path.</h1>
+        <h1>Page not found</h1>
         <p>The page you’re looking for doesn’t exist.</p>
         <Link className="button" href="/">
           Back to Doctor Tracker

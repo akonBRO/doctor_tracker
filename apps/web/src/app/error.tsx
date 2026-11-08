@@ -5,7 +5,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
     <main id="main" className="session-state">
       <div role="alert">
         <p className="eyebrow">CONNECTION INTERRUPTED</p>
-        <h1>Let’s try that again.</h1>
+        <h1>Unable to load workspace</h1>
         <p>The workspace could not be loaded. Please try again in a moment.</p>
         <button className="button" onClick={reset}>
           Try again

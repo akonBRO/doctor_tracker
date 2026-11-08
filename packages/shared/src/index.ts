@@ -1,5 +1,6 @@
 import { z } from 'zod';
 export * from './doctors.js';
+export * from './patients.js';
 
 export const emailSchema = z
   .email({ error: 'Enter a valid email address.' })

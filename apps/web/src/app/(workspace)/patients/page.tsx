@@ -1,6 +1,5 @@
-import type { Metadata } from 'next';
-import { WorkspaceFoundation } from '../../../components/workspace-foundation';
-export const metadata: Metadata = { title: 'Patients' };
+import { PatientDirectoryPage } from '../../../features/patients/patients';
+export const metadata = { title: 'Patients' };
 export default function Page() {
-  return <WorkspaceFoundation area="patients" />;
+  return <PatientDirectoryPage />;
 }

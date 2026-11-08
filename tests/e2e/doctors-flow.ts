@@ -1,15 +1,18 @@
+import { capturePage } from './visual.js';
 import { expect, type Page, type TestInfo } from '@playwright/test';
 import type { MongoClient } from 'mongodb';
 import AxeBuilder from '@axe-core/playwright';
 
 export async function doctorsFlow(page: Page, info: TestInfo, database: MongoClient) {
   // This connection is supplied only by the isolated test-server fixture, never by local .env.
+  await database.db().collection('patients').deleteMany({});
   await database.db().collection('doctors').deleteMany({});
   const checkOverflow = async () =>
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
   const checkA11y = async () => {
+    await expect(page).toHaveTitle(/Doctor Tracker/);
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(
       result.violations.map((value) => ({
@@ -19,17 +22,12 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
     ).toEqual([]);
   };
   await page.goto('/doctors');
-  await expect(
-    page.getByRole('heading', { name: 'Your doctor directory starts here' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No doctors yet' })).toBeVisible();
   await checkA11y();
   await checkOverflow();
   await page.getByRole('link', { name: 'Add Doctor', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Add Doctor', exact: true })).toBeVisible();
-  await page.screenshot({
-    path: `docs/screenshots/doctor-create-${info.project.name}.png`,
-    fullPage: true,
-  });
+  await capturePage(page, info.project.name, 'doctor-create');
   await checkA11y();
   await checkOverflow();
   await page.getByRole('button', { name: 'Save doctor', exact: true }).click();
@@ -85,17 +83,12 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await page.unroute('**/api/v1/doctors');
   await page.getByRole('button', { name: 'Save doctor', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Dr. Nadia Rahman' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('Doctor added.');
+  await expect(page.getByRole('status').filter({ hasText: 'Doctor added.' })).toContainText(
+    'Doctor added.',
+  );
   await expect(page.getByRole('link', { name: 'nadia@example.test' })).toBeVisible();
-  await expect(
-    page.getByText('Patient records for this doctor will be available in a future update.', {
-      exact: false,
-    }),
-  ).toBeVisible();
-  await page.screenshot({
-    path: `docs/screenshots/doctor-detail-${info.project.name}.png`,
-    fullPage: true,
-  });
+  await expect(page.getByRole('heading', { name: 'No patients found' })).toBeVisible();
+  await capturePage(page, info.project.name, 'doctor-detail');
   await checkA11y();
   await checkOverflow();
   const firstRecord = await database
@@ -154,10 +147,7 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await expect(page.getByRole('link', { name: 'Dr. Elias Noor 01', exact: true })).toBeVisible();
   await checkA11y();
   await checkOverflow();
-  await page.screenshot({
-    path: `docs/screenshots/doctors-${info.project.name}.png`,
-    fullPage: true,
-  });
+  await capturePage(page, info.project.name, 'doctors');
   await page.getByLabel('Rows per page', { exact: true }).selectOption('25');
   await expect(page.getByText('Page 1 of 1', { exact: true })).toBeVisible();
   await page.getByLabel('Search doctors', { exact: true }).fill('unmatched');

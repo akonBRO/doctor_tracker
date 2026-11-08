@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import type { Config } from './env.js';
 import { Admin, Invitation, Challenge, Session } from '../models/auth.js';
 import { DoctorModel } from '../models/doctor.js';
+import { PatientModel } from '../models/patient.js';
 
 export async function connectDatabase(config: Config) {
   mongoose.set('strictQuery', true);
@@ -22,5 +23,6 @@ export async function connectDatabase(config: Config) {
     Challenge.createIndexes(),
     Session.createIndexes(),
     DoctorModel.createIndexes(),
+    PatientModel.createIndexes(),
   ]);
 }

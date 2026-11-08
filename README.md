@@ -1,6 +1,6 @@
 # Doctor Tracker
 
-A focused administrative workspace for organizing doctors, their patients, and meaningful practice information. This repository implements **Stages 1–2**: an original visual identity, responsive public and protected interfaces, invitation-only administrator authentication with mandatory MFA, and a real MongoDB-backed doctor directory with creation, search, filters, pagination and details. Patient management and analytics remain for later stages; no fabricated records or statistics are presented as real application data.
+Doctor Tracker implements **Stages 1-3**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, and a redesigned clinical registry interface. Search, combined filters, pagination, doctor assignments, editing and permanent deletion use the independent Express API and MongoDB. Analytics are reserved for Stage 4.
 
 Public source: **[akonBRO/doctor_tracker](https://github.com/akonBRO/doctor_tracker)**. Completed updates are committed and pushed to `origin` as requested by the owner. No deployment has been performed.
 
@@ -15,7 +15,9 @@ npm run setup:local
 
 The setup command creates ignored `apps/api/.env` and `apps/web/.env` files with **independently generated random secrets**, preserving any existing files. They are for local development only. Environment examples contain descriptive placeholders, not live credentials.
 
-Choose a database:
+**This workspace already uses Atlas:** retain `apps/api/.env`, its database selection and existing accounts. Connectivity was verified read-only during Stage 3. For ordinary development run `npm run dev`; do not run `dev:db`, reset, seed or replace the configured database. Automated tests provision separate disposable replica sets.
+
+For a new installation, choose a database:
 
 1. **Atlas / existing replica set:** set `MONGODB_URI` in `apps/api/.env`. Use TLS and a least-privileged database user. Never commit its connection string.
 2. **Persistent Docker development database:** run `docker compose up -d --wait`. The supplied configuration initializes a local replica set and persists it in a named volume. It binds the unauthenticated development database to loopback only; it is not a production database configuration.
@@ -123,7 +125,7 @@ docs/             Stage status, security checklist, desktop/mobile evidence
 
 ### 1. Separate applications with a same-origin browser connection
 
-Keeping Express independent follows the updated assignment architecture and gives authentication/database code a single owner. A Next.js rewrite lets the browser use host-only HttpOnly cookies without cross-site token handling. CORS still permits only the explicit frontend origin, and every mutation additionally validates the exact Origin and a signed CSRF token. The frontend uses a small typed fetch client because Stage 1 has only identity and authentication data; a server-state cache can be introduced when record querying warrants it.
+Keeping Express independent follows the updated assignment architecture and gives authentication/database code a single owner. A Next.js rewrite lets the browser use host-only HttpOnly cookies without cross-site token handling. CORS still permits only the explicit frontend origin, and every mutation additionally validates the exact Origin and a signed CSRF token. The frontend uses a typed fetch client and a shared abortable no-store query hook. URL state controls directories; mutations refresh the relevant mounted view or navigate to a fresh record read.
 
 ### 2. Database-backed rotating sessions with mandatory MFA
 
@@ -146,9 +148,17 @@ Directory parameters are `q`, `specialization`, `hospital`, `from`, `to`, `page`
 
 The URL stores filters, sorting and page state; refresh/back/forward and validated return links preserve context. Input changes reset page one, while “Reset filters” preserves valid sort/page-size preferences. Reads debounce/cancel safely; writes have duplicate-submit protection and keep drafts on recoverable errors. No submitted mutation is automatically replayed.
 
-Indexes cover creation order, normalized name order, individual/combined specialization/hospital filters and normalized multikey search tokens. The directory uses projected lean find/count queries; options alone use bounded distinct-value aggregation. Captured fixture query plans demonstrate index use without claiming production performance. See [Doctor Management](docs/DOCTOR_MANAGEMENT.md) for the schema, index definitions, exact API/date/search semantics, limitations, verification details, and Stage 3 patient integration contract.
+Indexes cover creation order, normalized name order, individual/combined specialization/hospital filters and normalized multikey search tokens. The directory uses projected lean find/count queries; options alone use bounded distinct-value aggregation. Captured fixture query plans demonstrate index use without claiming production performance. See [Doctor Management](docs/DOCTOR_MANAGEMENT.md) for the schema, index definitions, exact API/date/search semantics, limitations, verification details, and implemented patient integration.
 
 Successful browser tests use actual invitations/MFA/doctor APIs and an isolated MongoDB replica set. Only explicit failure/latency cases intercept responses. When a custom `.env` points the web app elsewhere, follow the [safe test-build origin instructions](docs/DOCTOR_MANAGEMENT.md#verification-and-local-execution): Next.js rewrite destinations are baked into the build, and the fixture refuses to target another API environment.
+
+## Patient Management and redesign - Stage 3
+
+Patients store name, free-text condition, immutable doctorId and timestamps. Create under an existing doctor or select one using a real directory lookup. The global directory supports name/condition prefix search, condition/doctor/UTC date filters, stable sorting and server pagination. Prefilled editing preserves failed-save drafts. Delete confirmation permanently removes the record from both global and doctor-scoped lists. Doctor details show real patient counts and paginated records.
+
+The new clinical ledger uses graphite navigation, mineral-white content, rust actions, readable 16px inputs and tables that become labeled records on phones. The landing is typographic; authentication is a single task-focused column. The original logo geometry is retained with updated colors. No fabricated statistics or patient records appear in the application.
+
+See [Patient Management](docs/PATIENT_MANAGEMENT.md) for endpoints, schema, scopes, indexing, deletion and Stage 4 integration; [Design Redesign](docs/DESIGN_REDESIGN.md) for the brief, references and visual review.
 
 ## Scripts and verification
 
@@ -175,9 +185,9 @@ npm run build
 npm run test:e2e
 ```
 
-On Linux CI, use `npx playwright install --with-deps chromium`. The browser suite starts both actual apps with an isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 768, 375, and 320 pixels, then tears down its servers. Test identities are disposable; they are never seeded into your configured database.
+On Linux CI, use `npx playwright install --with-deps chromium`. The browser runner starts each viewport with its own actual API/web processes and fresh isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 1024, 768, 375, and 320 pixels, then tears down its servers. This keeps the actual MFA/IP limits intact across five independent full workflows. Test identities are disposable; they are never seeded into your configured database.
 
-Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. This development suite has also passed at all four viewport sizes.
+Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. This development suite has also passed at all five viewport sizes.
 
 For production-process smoke testing locally after a build, run these in separate terminals with your configured database running:
 
@@ -190,7 +200,7 @@ Actual verification results and any unfinished checks are recorded in [IMPLEMENT
 
 ## Visual evidence
 
-Screenshots are generated from actual production-browser tests. The workspace screenshot uses an explicitly disposable test administrator, with no patient data.
+Screenshots are generated from actual production-browser tests. All identities and patient/doctor records shown are explicitly disposable test fixtures. MFA setup keys are masked before capture. No Atlas data is used.
 
 | Desktop                                                                                            | Mobile                                                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -198,10 +208,12 @@ Screenshots are generated from actual production-browser tests. The workspace sc
 | ![Protected workspace on desktop](docs/screenshots/workspace-desktop.png)                          | ![Protected workspace on mobile](docs/screenshots/workspace-mobile.png)                          |
 | ![Doctor directory with disposable API-created test records](docs/screenshots/doctors-desktop.png) | ![Stacked doctor directory records on mobile](docs/screenshots/doctors-mobile.png)               |
 | ![Five-field doctor creation form](docs/screenshots/doctor-create-desktop.png)                     | ![Doctor creation form on a small phone](docs/screenshots/doctor-create-small-mobile.png)        |
-| ![Saved doctor details](docs/screenshots/doctor-detail-desktop.png)                                | ![Doctor details and future patient integration area](docs/screenshots/doctor-detail-mobile.png) |
+| ![Saved doctor details](docs/screenshots/doctor-detail-desktop.png)                                | ![Doctor details and actual assigned patient records](docs/screenshots/doctor-detail-mobile.png) |
+
+Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creation](docs/screenshots/patient-create-desktop.png), [editing](docs/screenshots/patient-edit-desktop.png), [320px directory](docs/screenshots/patients-small-mobile.png). The [design record](docs/DESIGN_REDESIGN.md) links every required page at all five widths.
 
 ## Current boundaries
 
-Stages 1–2 provide secure account access, the original brand and landing/auth UI, the protected shell, and real doctor creation/directory/search/filter/pagination/detail functionality. Doctor editing/deletion is not specified and is not included. Patient models, doctor-patient relationships and patient CRUD/search/filter/pagination are reserved for Stage 3; analytics remain for a later dashboard stage. Doctors and patients are managed records, not login accounts. Doctor detail pages explicitly mark patient management as unavailable, with no fabricated patient records or counts.
+Stages 1-3 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, and patient creation/listing/details/editing/permanent deletion under validated doctors. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, clinical histories and reporting are outside this stage.
 
-No deployment, production Atlas validation, persistent database installation, email delivery, uploads, webhooks, password reset, or MFA reset has been performed or implied. In-memory rate limits support one API instance; configure a shared store before scaling. The Docker recipe is provided for local persistence but was not run in this environment.
+Stage 4 analytics, Stage 5 workload refinements and Stage 6 deployment remain future work. Atlas connectivity was verified without changing records; no deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

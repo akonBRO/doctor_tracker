@@ -2,79 +2,30 @@
   min-width: 0;
   width: 100%;
 }
-.doctors-feature .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
 .doctor-page-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
-}
-.doctor-page-heading .eyebrow {
-  font-size: 10px;
-  color: var(--muted);
+  margin-bottom: 28px;
 }
 .doctor-page-heading h1 {
-  font-size: 34px;
-  letter-spacing: -1.4px;
-  margin: 12px 0;
+  margin: 8px 0 12px;
 }
 .doctor-page-heading p:last-child {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.9;
+  font-size: 16px;
 }
 .doctor-page-heading .button {
   white-space: nowrap;
-  gap: 10px;
-  min-height: 46px;
 }
 .directory-filters {
   display: grid;
-  grid-template-columns: 1fr 200px;
-  gap: 18px 22px;
-  border-block: 1px solid var(--line);
-  padding-block: 22px;
-  margin-top: 30px;
-}
-.doctors-feature .field > label {
-  font-size: 11px;
-}
-.doctors-feature .field input,
-.doctors-feature select {
-  height: 44px;
-  padding: 10px 12px;
-  border: 1px solid #ced3c9;
-  border-radius: var(--radius);
-  background: #fdfdfb;
-  color: var(--ink);
-  font-size: 12px;
-  min-width: 0;
-  width: 100%;
-}
-.doctors-feature .field input::placeholder {
-  color: var(--muted);
-}
-.doctor-search > div {
-  position: relative;
-}
-.doctor-search > div > svg {
-  position: absolute;
-  left: 13px;
-  top: 13px;
-  color: var(--muted);
-}
-.doctor-search > div > input {
-  padding-left: 40px !important;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 20px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  padding: 24px 0;
 }
 .doctor-filter-row {
   display: grid;
@@ -82,23 +33,30 @@
   gap: 16px;
   grid-column: 1/-1;
 }
-.doctors-feature .field-hint {
-  font-size: 10px;
+.doctor-search > div {
+  position: relative;
+}
+.doctor-search > div > svg {
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  color: var(--muted);
+}
+.doctor-search > div > input {
+  padding-left: 40px;
 }
 .reset-filters {
-  display: inline-flex;
-  align-items: center;
-  justify-self: start;
-  gap: 7px;
   border: 0;
   background: transparent;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 14px;
+  padding: 4px 0;
   min-height: 36px;
-  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
   grid-column: 1/-1;
-}
-.reset-filters:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -108,38 +66,51 @@
   justify-content: space-between;
   gap: 16px;
   padding: 20px 0;
-  font-size: 11px;
   color: var(--muted);
+  font-size: 14px;
 }
-.directory-caption > label {
+.directory-caption label {
   display: flex;
   align-items: center;
   gap: 10px;
-  white-space: nowrap;
 }
 .directory-caption select {
-  width: 65px;
-  height: 36px;
-  padding: 6px 9px;
-  font-size: 11px;
+  width: 72px;
+  min-height: 40px;
+  background: white;
+  border: 1px solid #aeb5b2;
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--ink);
 }
-.doctor-table {
+.doctor-table,
+.patient-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 15px;
+  line-height: 1.6;
 }
-.doctor-table th {
-  padding: 14px;
+.doctor-table th,
+.patient-table th {
   text-align: left;
-  border-bottom: 1px solid var(--line);
-  font-size: 10px;
-  letter-spacing: 0.3px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--muted);
-  font-weight: 500;
-  background: #f1f2ea;
+  padding: 14px 12px;
+  border-bottom: 1px solid #aeb5b2;
+}
+.doctor-table td,
+.patient-table td {
+  padding: 20px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  background: white;
+}
+.doctor-table tbody tr:hover td,
+.patient-table tbody tr:hover td {
+  background: #fafaf7;
 }
 .doctor-table th:nth-child(1) {
   width: 21%;
@@ -148,52 +119,41 @@
   width: 16%;
 }
 .doctor-table th:nth-child(3) {
-  width: 19%;
+  width: 18%;
 }
 .doctor-table th:nth-child(4) {
   width: 26%;
 }
 .doctor-table th:nth-child(5) {
-  width: 13%;
+  width: 14%;
 }
-.doctor-table th:nth-child(6) {
+.doctor-table th:last-child {
   width: 5%;
-  padding: 6px;
-}
-.doctor-table td {
-  padding: 18px 14px;
-  border-bottom: 1px solid var(--line);
-  vertical-align: middle;
-  overflow-wrap: anywhere;
-  line-height: 1.8;
 }
 .doctor-table td:last-child {
-  padding: 4px;
-}
-.doctor-table tbody tr:hover {
-  background: #f7f8f2;
+  padding-inline: 0;
 }
 .doctor-name-link {
-  font-weight: 600;
-  font-size: 13px;
-  display: inline-block;
-  color: var(--accent);
-  line-height: 1.7;
-}
-.doctor-name-link:hover {
+  font-weight: 650;
+  color: var(--ink);
+  font-size: 16px;
   text-decoration: underline;
   text-underline-offset: 4px;
+  text-decoration-color: #b2b5b2;
+}
+.doctor-name-link:hover {
+  color: var(--accent);
 }
 .doctor-contact span {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
 }
 .doctor-contact span + span {
+  margin-top: 5px;
   color: var(--muted);
-  margin-top: 2px;
 }
 .doctor-table time {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .doctor-details-action {
@@ -208,115 +168,75 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  margin-top: 20px;
-  padding-block: 8px;
+  gap: 16px;
+  margin-top: 24px;
 }
 .doctor-pagination button {
   display: flex;
   align-items: center;
-  gap: 9px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 10px 14px;
+  gap: 8px;
   min-height: 44px;
-  font-size: 11px;
-  color: var(--accent);
-}
-.doctor-pagination button:hover:not(:disabled) {
-  border-color: var(--accent);
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid #b8bdbb;
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 14px;
 }
 .doctor-pagination button:disabled {
-  color: var(--muted);
-  opacity: 0.65;
+  cursor: default;
+  opacity: 0.55;
 }
 .doctor-pagination > span {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .doctor-mobile-list {
   display: none;
 }
 .doctor-message {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 48px 24px;
-  text-align: center;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--line);
   display: flex;
-  align-items: center;
   flex-direction: column;
-  gap: 16px;
-  background: var(--surface);
-  margin-top: 4px;
+  gap: 14px;
+  align-items: flex-start;
 }
 .doctor-message > svg {
-  color: var(--accent);
-}
-.doctor-message h2 {
-  font-size: 21px;
-  letter-spacing: -0.6px;
+  display: none;
 }
 .doctor-message > p {
-  font-size: 12px;
   color: var(--muted);
-  line-height: 1.9;
-  max-width: 450px;
-  overflow-wrap: anywhere;
+  max-width: 560px;
 }
 .doctor-message > div {
   display: flex;
-  gap: 22px;
-  align-items: center;
-  justify-content: center;
+  gap: 20px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .doctor-loading {
+  min-height: 220px;
   padding: 28px 0;
-  min-height: 230px;
-}
-.doctor-loading p {
-  font-size: 12px;
   color: var(--muted);
-  margin-bottom: 18px;
 }
 .doctor-loading > span {
   display: block;
-  height: 45px;
-  border-block: 1px solid #e9ebe2;
-  background: #f0f1e9;
-  margin-block: 12px;
-  border-radius: 4px;
+  height: 44px;
+  margin-block: 14px;
+  border-bottom: 1px solid var(--line);
+  background: #eceeeb;
 }
 .doctor-editor {
-  max-width: 810px;
-}
-.doctor-editor > .back-link,
-.doctors-feature > .back-link {
-  margin-bottom: 24px;
+  max-width: 900px;
 }
 .doctor-form {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
+  background: white;
   padding: 28px;
+  border-top: 2px solid var(--ink);
 }
 .doctor-form-intro {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 22px;
-  margin-bottom: 25px;
-}
-.doctor-form-intro > span {
-  color: var(--accent);
-  padding-top: 2px;
-}
-.doctor-form-intro p {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.8;
+  display: none;
 }
 .doctor-form fieldset {
   padding: 0;
@@ -324,453 +244,368 @@
   border: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px;
+  gap: 24px;
+  min-width: 0;
 }
-.doctor-form .doctor-field-name {
+.doctor-field-name {
   grid-column: 1/-1;
-}
-.doctor-form .field > label {
-  font-size: 12px;
-}
-.doctor-form .field input {
-  font-size: 13px;
-  height: 48px;
-}
-.doctor-form .field > label > span {
-  color: var(--muted);
-}
-.doctor-form .field input[aria-invalid='true'] {
-  border-color: var(--danger);
-}
-.doctor-form .field-error {
-  font-size: 11px;
-  line-height: 1.7;
-}
-.doctor-form .form-error {
-  margin-top: 24px;
 }
 .doctor-form-actions {
   display: flex;
-  align-items: center;
+  gap: 12px;
   justify-content: flex-end;
-  gap: 13px;
-  margin-top: 30px;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
-}
-.secondary-button {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--ink);
-  padding: 12px 17px;
-  min-height: 46px;
-  font-size: 12px;
-}
-.secondary-button:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.doctor-form .button {
-  gap: 22px;
-  min-height: 46px;
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+  padding-top: 24px;
 }
 .discard-confirmation {
-  margin-top: 20px;
-  border: 1px solid #dedbc7;
-  background: #f8f6eb;
-  padding: 16px;
-  border-radius: var(--radius);
+  padding: 20px;
+  background: var(--paper);
+  border-left: 3px solid var(--accent);
+  margin-top: 24px;
 }
 .discard-confirmation p {
-  font-size: 12px;
   margin-bottom: 12px;
 }
 .discard-confirmation button {
-  margin-right: 8px;
-  margin-top: 6px;
+  margin: 4px 8px 4px 0;
 }
 .doctor-detail-name {
   overflow-wrap: anywhere;
-  max-width: 900px;
 }
 .doctor-success {
   display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 9px;
-  padding: 13px 16px;
-  background: #e8eee0;
-  border: 1px solid #cdd9c1;
-  border-radius: var(--radius);
-  color: var(--accent);
-  font-size: 12px;
-  margin-bottom: 28px;
+  padding: 14px;
+  margin-bottom: 24px;
+  border-left: 3px solid #3f6552;
+  background: #edf4ee;
+  color: #2f5440;
+  font-size: 15px;
 }
 .doctor-detail-panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-top: 2px solid var(--ink);
+  background: white;
 }
 .record-section-heading {
-  padding: 20px 25px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   border-bottom: 1px solid var(--line);
 }
 .record-section-heading h2 {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 20px;
 }
 .record-section-heading p {
-  font-size: 11px;
   color: var(--muted);
+  font-size: 14px;
 }
 .doctor-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  gap: 28px;
   margin: 0;
-  padding: 32px 25px 38px;
+  padding: 28px 24px;
 }
 .doctor-detail-grid > div {
   min-width: 0;
 }
 .doctor-detail-grid dt {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin-bottom: 8px;
 }
 .doctor-detail-grid dd {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 17px;
   overflow-wrap: anywhere;
 }
 .doctor-detail-grid a {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 4px;
-  text-decoration-color: #b9c5b5;
 }
-.doctor-patient-foundation {
-  display: flex;
-  gap: 17px;
+.doctor-patients {
+  margin-top: 48px;
+}
+.doctor-patients > .record-section-heading {
+  padding: 0 0 20px;
+  border: 0;
   align-items: flex-start;
-  margin-top: 32px;
-  border-block: 1px solid var(--line);
-  padding-block: 24px;
-  color: var(--accent);
 }
-.doctor-patient-foundation h2 {
+.record-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.patient-table th:last-child {
+  width: 150px;
+}
+.patient-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.patient-actions a,
+.patient-actions button {
   font-size: 14px;
-  font-weight: 500;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.patient-name {
+  font-size: 16px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.patient-form {
+  max-width: 700px;
+}
+.patient-form fieldset {
+  grid-template-columns: 1fr;
+}
+.patient-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.patient-form .assigned-doctor {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.assigned-doctor span {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+}
+.assigned-doctor strong {
+  display: block;
+  margin-top: 6px;
+}
+.doctor-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.doctor-picker > p:not(.field-hint) {
+  margin-bottom: 12px;
+}
+.doctor-picker-options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  max-height: 260px;
+  overflow: auto;
+}
+.doctor-picker-options button {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: white;
+  padding: 12px;
   color: var(--ink);
 }
-.doctor-patient-foundation p {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.9;
-  margin-top: 8px;
-  max-width: 590px;
+.doctor-picker-options button:hover {
+  background: var(--paper);
 }
-@media (max-width: 1200px) {
+.doctor-picker-options small {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+}
+.delete-dialog {
+  border: 0;
+  border-top: 4px solid var(--danger);
+  border-radius: 4px;
+  padding: 28px;
+  max-width: 480px;
+  width: calc(100% - 32px);
+  color: var(--ink);
+  box-shadow: 0 16px 80px #0003;
+}
+.delete-dialog::backdrop {
+  background: #151c23aa;
+}
+.delete-dialog h2 {
+  margin-bottom: 16px;
+}
+.delete-dialog p {
+  overflow-wrap: anywhere;
+}
+.delete-dialog .record-actions {
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+.danger-button {
+  background: #a52625;
+  border-color: #a52625;
+}
+@media (max-width: 1250px) {
   .doctor-filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .doctor-table th,
   .doctor-table td {
-    padding-inline: 10px;
-  }
-  .doctor-table th:nth-child(1) {
-    width: 22%;
-  }
-  .doctor-table th:nth-child(3) {
-    width: 18%;
-  }
-  .doctor-table th:nth-child(5) {
-    width: 13%;
-  }
-  .doctor-name-link {
-    font-size: 12px;
-  }
-  .doctor-table {
-    font-size: 11px;
+    padding-inline: 8px;
   }
 }
-@media (max-width: 1000px) {
-  .doctor-table-wrap {
+@media (max-width: 1050px) {
+  .doctor-table-wrap,
+  .patient-table-wrap {
     display: none;
   }
   .doctor-mobile-list {
     display: block;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-top: 1px solid var(--line);
   }
   .doctor-mobile-list article {
-    padding: 19px 20px;
+    background: white;
     border-bottom: 1px solid var(--line);
+    padding: 22px;
   }
-  .doctor-mobile-list article:last-child {
-    border-bottom: 0;
-  }
-  .doctor-mobile-list article > div {
+  .doctor-mobile-list article > div:first-child {
     display: flex;
     justify-content: space-between;
+    gap: 16px;
     align-items: center;
-    gap: 12px;
-  }
-  .doctor-mobile-list .doctor-name-link {
-    font-size: 15px;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    overflow-wrap: anywhere;
-    min-width: 0;
-  }
-  .doctor-mobile-list .doctor-details-action {
-    min-width: 44px;
-    flex-shrink: 0;
   }
   .mobile-specialization {
-    font-size: 12px;
     color: var(--muted);
-    margin-top: 1px;
+    margin: 8px 0 16px;
+    font-size: 15px;
   }
   .doctor-mobile-list dl {
     margin: 16px 0 0;
     display: grid;
-    gap: 8px;
+    gap: 10px;
+    font-size: 15px;
   }
   .doctor-mobile-list dl > div {
     display: grid;
-    grid-template-columns: 75px minmax(0, 1fr);
-    gap: 16px;
-    align-items: baseline;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 14px;
   }
   .doctor-mobile-list dt {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 14px;
   }
   .doctor-mobile-list dd {
     margin: 0;
-    font-size: 12px;
     overflow-wrap: anywhere;
   }
+  .doctor-mobile-list .patient-actions {
+    margin-top: 12px;
+    justify-content: flex-start !important;
+  }
+  .doctor-mobile-list .patient-name {
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 767px) {
   .doctor-page-heading {
     align-items: flex-start;
+    gap: 20px;
+    flex-direction: column;
   }
   .doctor-page-heading h1 {
-    font-size: 31px;
-  }
-  .doctor-page-heading .button {
-    font-size: 11px;
-    padding: 12px 14px;
+    font-size: 30px;
   }
   .directory-filters {
-    grid-template-columns: minmax(0, 1fr) 155px;
-    gap: 18px 16px;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-block: 20px;
+  }
+  .doctor-filter-row {
+    gap: 16px 12px;
+  }
+  .directory-caption {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
   }
   .doctor-form {
-    padding: 23px;
+    padding: 24px 20px;
   }
   .doctor-form fieldset {
     grid-template-columns: 1fr;
   }
-  .doctor-form .field {
-    grid-column: 1;
+  .doctor-detail-grid {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+    gap: 24px;
   }
   .record-section-heading {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-  }
-  .doctor-detail-grid {
-    gap: 25px;
-    padding: 25px;
-  }
-  .doctor-detail-grid dd {
-    font-size: 13px;
-  }
-}
-@media (max-width: 640px) {
-  .doctor-page-heading {
     gap: 12px;
+    padding-inline: 20px;
+  }
+  .doctor-form-actions {
     flex-wrap: wrap;
   }
-  .doctor-page-heading h1 {
-    font-size: 31px;
-    margin-block: 10px;
-  }
-  .doctor-page-heading p:last-child {
-    font-size: 12px;
-  }
-  .doctor-page-heading .button {
-    min-height: 44px;
-    padding: 12px 15px;
-    font-size: 12px;
-  }
-  .directory-filters {
-    margin-top: 24px;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding-block: 18px;
-  }
-  .doctor-sort {
-    max-width: none;
-  }
-  .doctor-filter-row {
-    gap: 15px 12px;
-  }
-  .doctors-feature .field > label {
-    font-size: 10px;
-  }
-  .doctors-feature .field input,
-  .doctors-feature select {
-    font-size: 12px;
-    height: 46px;
-    padding-inline: 10px;
-  }
-  .doctors-feature .field-hint {
-    font-size: 9px;
-    line-height: 1.8;
-  }
-  .doctor-search > div > svg {
-    top: 14px;
-  }
-  .doctor-sort select {
-    width: 100%;
-  }
   .doctor-mobile-list article {
-    padding: 15px;
-  }
-  .doctor-mobile-list dl > div {
-    grid-template-columns: 61px minmax(0, 1fr);
-    gap: 12px;
-  }
-  .doctor-mobile-list .doctor-name-link {
-    font-size: 15px;
+    padding: 20px 16px;
   }
   .doctor-pagination {
     gap: 8px;
-    margin-top: 15px;
   }
   .doctor-pagination button {
-    font-size: 10px;
-    gap: 5px;
     padding: 10px;
+    gap: 5px;
   }
   .doctor-pagination > span {
-    font-size: 10px;
-    text-align: center;
-  }
-  .directory-caption {
-    gap: 10px;
-    align-items: flex-start;
-    font-size: 10px;
-  }
-  .directory-caption label {
-    gap: 6px;
-    font-size: 9px;
-  }
-  .directory-caption select {
-    width: 54px;
-    height: 34px;
-  }
-  .doctor-message {
-    padding: 36px 18px;
-  }
-  .doctor-message h2 {
-    font-size: 20px;
-  }
-  .doctor-message p {
-    font-size: 12px;
-  }
-  .doctor-editor .doctor-page-heading {
-    margin-bottom: 20px;
-  }
-  .doctor-form {
-    padding: 20px 17px;
-  }
-  .doctor-form fieldset {
-    gap: 19px;
-  }
-  .doctor-form .field > label {
-    font-size: 12px;
-  }
-  .doctor-form .field input {
-    height: 48px;
     font-size: 13px;
   }
-  .doctor-form-actions {
-    justify-content: space-between;
-    gap: 10px;
+  .doctor-pagination svg {
+    display: none;
   }
-  .doctor-form-actions .button {
-    font-size: 12px;
-    padding: 13px 17px;
-  }
-  .secondary-button {
-    font-size: 11px;
-    padding: 11px 14px;
-  }
-  .doctor-form-intro p {
-    font-size: 11px;
-  }
-  .doctor-detail-grid {
-    grid-template-columns: 1fr;
-    padding: 25px 20px;
-    gap: 24px;
-  }
-  .doctor-detail-grid dd {
-    font-size: 15px;
-  }
-  .record-section-heading {
-    padding: 20px;
-  }
-  .record-section-heading h2 {
-    font-size: 13px;
-  }
-  .doctor-patient-foundation {
-    gap: 13px;
-    padding-block: 22px;
-    margin-top: 24px;
-  }
-  .doctor-patient-foundation p {
-    font-size: 11px;
-  }
-  .doctor-success {
-    font-size: 11px;
-    align-items: flex-start;
-  }
-  .doctor-detail-name {
-    font-size: 29px !important;
-  }
-  .discard-confirmation {
-    padding: 12px;
-  }
-  .discard-confirmation p {
-    font-size: 11px;
+  .doctor-patients > .record-section-heading {
+    flex-direction: column;
   }
 }
 @media (max-width: 360px) {
   .doctor-filter-row {
     grid-template-columns: 1fr;
   }
+  .doctor-form {
+    padding: 24px 16px;
+  }
+  .doctor-mobile-list dl > div {
+    grid-template-columns: 70px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .doctor-form-actions {
+    justify-content: stretch;
+  }
+  .doctor-form-actions > button {
+    flex: 1;
+    padding-inline: 12px;
+  }
   .doctor-form-actions .button {
-    gap: 13px;
-    padding-inline: 14px;
+    white-space: nowrap;
   }
-  .directory-caption > p {
-    max-width: 130px;
+  .doctor-form-actions .button svg {
+    display: none;
   }
-  .doctor-page-heading h1 {
-    font-size: 29px;
-  }
+}
+
+.doctor-name-link,
+.patient-name,
+.doctor-picker p {
+  overflow-wrap: anywhere;
+  min-width: 0;
 }

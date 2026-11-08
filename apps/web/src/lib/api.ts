@@ -14,13 +14,13 @@ let csrf: string | undefined;
 let refreshing: Promise<void> | undefined;
 async function send<T>(
   path: string,
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   body?: unknown,
   allowRefresh = true,
   signal?: AbortSignal,
 ): Promise<T> {
   try {
-    if (method === 'POST' && !csrf) {
+    if (method !== 'GET' && !csrf) {
       const data = await send<{ token: string }>('/auth/csrf', 'GET', undefined, false);
       csrf = data.token;
     }
@@ -30,8 +30,8 @@ async function send<T>(
       cache: 'no-store',
       signal,
       headers:
-        method === 'POST' ? { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf! } : {},
-      ...(method === 'POST' ? { body: JSON.stringify(body ?? {}) } : {}),
+        method !== 'GET' ? { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf! } : {},
+      ...(method !== 'GET' ? { body: JSON.stringify(body ?? {}) } : {}),
     });
     const payload: ApiEnvelope<T> & ApiErrorBody = await response.json();
     // Retry only safe reads. Never replay a mutation with an uncertain outcome.
@@ -39,7 +39,7 @@ async function send<T>(
       response.status === 401 &&
       allowRefresh &&
       method === 'GET' &&
-      (path === '/auth/me' || path.startsWith('/doctors'))
+      (path === '/auth/me' || path.startsWith('/doctors') || path.startsWith('/patients'))
     ) {
       const rotate = async () => {
         await send('/auth/refresh', 'POST', {}, false);
@@ -79,5 +79,7 @@ async function send<T>(
 export const api = {
   get: <T>(path: string, options?: { signal?: AbortSignal }) =>
     send<T>(path, 'GET', undefined, true, options?.signal),
+  patch: <T>(path: string, body: unknown) => send<T>(path, 'PATCH', body),
+  delete: <T>(path: string) => send<T>(path, 'DELETE', {}),
   post: <T>(path: string, body?: unknown) => send<T>(path, 'POST', body),
 };

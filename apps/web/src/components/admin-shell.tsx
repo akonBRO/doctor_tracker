@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -7,7 +7,6 @@ import {
   ChartNoAxesCombined,
   LogOut,
   Menu,
-  ShieldCheck,
   Stethoscope,
   UsersRound,
   X,
@@ -17,7 +16,7 @@ import { api, ApiError } from '../lib/api';
 import { Brand } from './brand';
 
 const links = [
-  { href: '/dashboard', label: 'Overview', icon: ChartNoAxesCombined },
+  { href: '/dashboard', label: 'Dashboard', icon: ChartNoAxesCombined },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
   { href: '/patients', label: 'Patients', icon: UsersRound },
 ];
@@ -37,6 +36,45 @@ export function AdminShell({
   const [error, setError] = useState('');
   const [menu, setMenu] = useState(false);
   const [busy, setBusy] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const navigation = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const trigger = menuButton.current;
+    const elements = () =>
+      Array.from(
+        navigation.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? [],
+      ).filter((element) => element.getClientRects().length > 0);
+    elements()[0]?.focus();
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMenu(false);
+      }
+      if (event.key === 'Tab') {
+        const targets = elements();
+        const first = targets[0];
+        const last = targets.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    const resize = () => {
+      if (window.innerWidth >= 768) setMenu(false);
+    };
+    document.addEventListener('keydown', keyboard);
+    window.addEventListener('resize', resize);
+    return () => {
+      document.removeEventListener('keydown', keyboard);
+      window.removeEventListener('resize', resize);
+      trigger?.focus();
+    };
+  }, [menu]);
   const restore = useCallback(async () => {
     try {
       const result = await api.get<AuthResponse>('/auth/me');
@@ -104,10 +142,11 @@ export function AdminShell({
     );
   return (
     <div className="admin-layout">
-      <header className="mobile-bar">
+      <header className="mobile-bar" inert={menu}>
         <Brand />
         <button
           className="icon-button"
+          ref={menuButton}
           aria-label={menu ? 'Close navigation' : 'Open navigation'}
           aria-expanded={menu}
           aria-controls="admin-navigation"
@@ -116,11 +155,23 @@ export function AdminShell({
           {menu ? <X /> : <Menu />}
         </button>
       </header>
-      <aside className={`sidebar${menu ? ' sidebar-open' : ''}`}>
+      <aside
+        ref={navigation}
+        className={`sidebar${menu ? ' sidebar-open' : ''}`}
+        role={menu ? 'dialog' : undefined}
+        aria-modal={menu || undefined}
+        aria-label={menu ? 'Workspace menu' : undefined}
+      >
+        <button
+          className="icon-button sidebar-close"
+          aria-label="Close workspace menu"
+          onClick={() => setMenu(false)}
+        >
+          <X />
+        </button>
         <div className="sidebar-brand">
-          <Brand />
+          <Brand inverse />
         </div>
-        <p className="eyebrow sidebar-caption">YOUR WORKSPACE</p>
         <nav id="admin-navigation" aria-label="Workspace navigation">
           {links.map((item) => (
             <Link
@@ -137,19 +188,7 @@ export function AdminShell({
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="workspace-security">
-            <ShieldCheck size={18} />
-            <span>Authenticator protected</span>
-          </div>
           <div className="admin-identity">
-            <span className="avatar">
-              {admin.name
-                .split(' ')
-                .map((part) => part[0])
-                .slice(0, 2)
-                .join('')
-                .toUpperCase()}
-            </span>
             <div>
               <strong>{admin.name}</strong>
               <span>Administrator</span>
@@ -161,7 +200,7 @@ export function AdminShell({
           </button>
         </div>
       </aside>
-      <div className="admin-main">
+      <div className="admin-main" inert={menu}>
         <div className="admin-topbar">
           <p>
             Workspace <span>/</span> {currentLink?.label}
@@ -180,7 +219,7 @@ export function AdminShell({
         </main>
         <footer className="admin-footer">
           <span>Doctor Tracker</span>
-          <span>Secure administrative workspace</span>
+          <span>Administrative registry</span>
         </footer>
       </div>
     </div>

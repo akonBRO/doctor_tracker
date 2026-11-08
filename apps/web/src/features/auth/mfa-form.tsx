@@ -88,8 +88,8 @@ export function MfaForm() {
         <span className="form-icon">
           <ShieldCheck size={26} />
         </span>
-        <p className="eyebrow">YOUR ACCOUNT IS PROTECTED</p>
-        <h1>Keep a way back in.</h1>
+
+        <h1>Save your recovery codes</h1>
         <p className="form-description">
           Save these recovery codes somewhere private. Each code can be used once if you lose access
           to your authenticator. They won’t be shown again.
@@ -133,13 +133,13 @@ export function MfaForm() {
       <span className="form-icon">
         <KeyRound size={25} />
       </span>
-      <p className="eyebrow">{step === 'enroll' ? 'ONE LAST STEP' : 'A LITTLE EXTRA CERTAINTY'}</p>
+
       <h1>
         {step === 'enroll'
-          ? 'Secure your account.'
+          ? 'Set up your authenticator'
           : recovery
             ? 'Use a recovery code.'
-            : 'Verify it’s you.'}
+            : 'Verify your identity'}
       </h1>
       <p className="form-description">
         {step === 'enroll'

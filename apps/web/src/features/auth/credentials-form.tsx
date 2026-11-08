@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff, KeyRound, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
 import { loginSchema, signupSchema, type AuthStep } from '@doctor-tracker/shared';
 import { api, ApiError } from '../../lib/api';
 
@@ -67,11 +67,7 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
         <span className="form-icon">
           <KeyRound size={25} />
         </span>
-        <p className="eyebrow">INVITATION-ONLY ACCESS</p>
-        <h1>
-          A personal invitation.
-          <br />A secure beginning.
-        </h1>
+        <h1>Create your account</h1>
         <p>
           Doctor Tracker is a private administrative workspace. You’ll need an invitation from your
           administrator to create an account.
@@ -94,17 +90,16 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
     );
   return (
     <>
-      <p className="eyebrow">{signup ? 'YOUR WORKSPACE STARTS HERE' : 'WELCOME BACK'}</p>
-      <h1>{signup ? 'Make yourself at home.' : 'Back to what matters.'}</h1>
+      <h1>{signup ? 'Create your account' : 'Log in'}</h1>
       <p className="form-description">
         {signup
-          ? 'Create your administrator account. Next, we’ll help you protect it with an authenticator.'
+          ? 'Enter your details to accept your invitation.'
           : 'Sign in to your Doctor Tracker workspace.'}
       </p>
       {signup && (
         <div className="onboarding-steps" aria-label="Account setup: step 1 of 2">
           <span className="current">01 Account details</span>
-          <span>02 Secure your account</span>
+          <span>02 Authenticator</span>
         </div>
       )}
       <form onSubmit={submit} noValidate className="auth-form">
@@ -178,16 +173,10 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
           </div>
         )}
         <button className="button full-width" type="submit" disabled={busy}>
-          {busy ? 'Please wait…' : signup ? 'Create account & continue' : 'Continue securely'}
+          {busy ? 'Please wait…' : signup ? 'Create account & continue' : 'Log in'}
           {!busy && <ArrowRight size={18} />}
         </button>
       </form>
-      <p className="form-security">
-        <ShieldCheck size={15} />{' '}
-        {signup
-          ? 'An authenticator is required to finish account setup.'
-          : 'You’ll verify with your authenticator after this step.'}
-      </p>
       <div className="auth-switch">
         {signup ? 'Already have an account?' : 'New to the workspace?'}{' '}
         <Link href={signup ? '/login' : '/signup'}>

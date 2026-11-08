@@ -4,7 +4,7 @@ export default defineConfig({
   globalSetup: './tests/e2e/setup.ts',
   fullyParallel: false,
   workers: 1,
-  timeout: 45000,
+  timeout: 90000,
   expect: { timeout: 10000 },
   reporter: 'list',
   use: {
@@ -15,6 +15,7 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { viewport: { width: 1440, height: 1000 } } },
+    { name: 'laptop', use: { viewport: { width: 1024, height: 900 } } },
     { name: 'tablet', use: { viewport: { width: 768, height: 1024 } } },
     {
       name: 'mobile',

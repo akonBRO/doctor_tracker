@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { doctorInputSchema, type Doctor } from '@doctor-tracker/shared';
 import { api, ApiError } from '../../lib/api';
 import { directoryReturn } from './helpers';
@@ -121,12 +121,6 @@ export function CreateDoctorPage() {
         onChange={() => setDirty(true)}
         noValidate
       >
-        <div className="doctor-form-intro">
-          <span>
-            <Check size={16} />
-          </span>
-          <p>This creates a directory record. Doctors do not receive a login account.</p>
-        </div>
         <fieldset disabled={busy}>
           <legend className="sr-only">Doctor information</legend>
           {inputs.map((input) => (
