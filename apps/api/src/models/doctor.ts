@@ -10,7 +10,7 @@ const field = (max: number) => ({
   type: String,
   required: true,
   maxlength: max,
-  minlength: 2,
+  minlength: 1,
   set: normalizeDoctorText,
 });
 const schema = new Schema(

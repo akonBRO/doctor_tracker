@@ -1,4 +1,4 @@
-name: Verify Stage 1
+name: Verify Doctor Tracker
 on: [push, pull_request]
 permissions:
   contents: read
@@ -8,6 +8,8 @@ jobs:
     timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: '1'
+      API_ORIGIN: http://127.0.0.1:4000
+      APP_ORIGIN: http://localhost:3000
     steps:
       - uses: actions/checkout@v7.0.1
         with:

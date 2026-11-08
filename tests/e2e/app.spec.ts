@@ -4,6 +4,7 @@ import { mkdir } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 import { generate } from 'otplib';
 import AxeBuilder from '@axe-core/playwright';
+import { doctorsFlow } from './doctors-flow.js';
 const { MongoClient } = createRequire(import.meta.url)('mongodb') as typeof import('mongodb');
 let database: InstanceType<typeof MongoClient>;
 
@@ -116,7 +117,7 @@ test('real invitation, MFA enrollment, restored session, shell navigation, and l
   await otherTab.close();
   await expect(page.getByRole('heading', { name: 'A clear place to begin.' })).toBeVisible();
   for (const [label, heading] of [
-    ['Doctors', 'The people providing care.'],
+    ['Doctors', 'Doctors'],
     ['Patients', 'Every record, in context.'],
   ]) {
     if (testInfo.project.name.includes('mobile'))
@@ -130,6 +131,8 @@ test('real invitation, MFA enrollment, restored session, shell navigation, and l
       true,
     );
   }
+  await test.step('Doctor directory, creation, filtering, details and failure recovery', () =>
+    doctorsFlow(page, testInfo, database));
   if (testInfo.project.name.includes('mobile'))
     await page.getByRole('button', { name: 'Open navigation' }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();

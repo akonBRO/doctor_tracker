@@ -17,6 +17,7 @@ async function send<T>(
   method: 'GET' | 'POST',
   body?: unknown,
   allowRefresh = true,
+  signal?: AbortSignal,
 ): Promise<T> {
   try {
     if (method === 'POST' && !csrf) {
@@ -27,13 +28,19 @@ async function send<T>(
       method,
       credentials: 'same-origin',
       cache: 'no-store',
+      signal,
       headers:
         method === 'POST' ? { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf! } : {},
       ...(method === 'POST' ? { body: JSON.stringify(body ?? {}) } : {}),
     });
     const payload: ApiEnvelope<T> & ApiErrorBody = await response.json();
     // Retry only safe reads. Never replay a mutation with an uncertain outcome.
-    if (response.status === 401 && allowRefresh && method === 'GET' && path === '/auth/me') {
+    if (
+      response.status === 401 &&
+      allowRefresh &&
+      method === 'GET' &&
+      (path === '/auth/me' || path.startsWith('/doctors'))
+    ) {
       const rotate = async () => {
         await send('/auth/refresh', 'POST', {}, false);
       };
@@ -46,7 +53,7 @@ async function send<T>(
         refreshing = undefined;
       });
       await refreshing;
-      return send<T>(path, method, body, false);
+      return send<T>(path, method, body, false, signal);
     }
     if (!response.ok) {
       if (payload.error?.code === 'CSRF_REJECTED') csrf = undefined;
@@ -60,6 +67,7 @@ async function send<T>(
     if (path === '/auth/logout') csrf = undefined;
     return payload.data;
   } catch (error) {
+    if (signal?.aborted) throw error;
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       0,
@@ -69,6 +77,7 @@ async function send<T>(
   }
 }
 export const api = {
-  get: <T>(path: string) => send<T>(path, 'GET'),
+  get: <T>(path: string, options?: { signal?: AbortSignal }) =>
+    send<T>(path, 'GET', undefined, true, options?.signal),
   post: <T>(path: string, body?: unknown) => send<T>(path, 'POST', body),
 };

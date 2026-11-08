@@ -79,6 +79,8 @@ export async function listDoctors(admin: AdminIdentity, query: DoctorQuery) {
         : query.sort === 'oldest'
           ? { createdAt: 1, _id: 1 }
           : { createdAt: -1, _id: -1 };
+  const count = DoctorModel.countDocuments(filter).maxTimeMS(3000);
+  if (!Object.keys(filter).length) count.hint('_id_');
   const [items, totalItems] = await Promise.all([
     DoctorModel.find(filter)
       .select(projection)
@@ -87,7 +89,7 @@ export async function listDoctors(admin: AdminIdentity, query: DoctorQuery) {
       .limit(query.limit)
       .maxTimeMS(3000)
       .lean(),
-    DoctorModel.countDocuments(filter).maxTimeMS(3000),
+    count,
   ]);
   const totalPages = Math.ceil(totalItems / query.limit);
   return {
@@ -119,8 +121,7 @@ export async function doctorOptions(
   // distinct() has no result limit: this bounded, indexed-prefix aggregation avoids an unbounded response.
   const rows = await DoctorModel.aggregate<{ _id: string; label: string }>([
     { $match: { [key]: literalPrefix(doctorKey(q)) } },
-    { $sort: { [key]: 1, _id: 1 } },
-    { $group: { _id: `$${key}`, label: { $first: `$${field}` } } },
+    { $group: { _id: `$${key}`, label: { $min: `$${field}` } } },
     { $sort: { _id: 1 } },
     { $limit: 21 },
   ]).option({ maxTimeMS: 3000 });

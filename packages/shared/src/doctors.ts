@@ -12,8 +12,9 @@ const text = (label: string, max: number) =>
     .pipe(
       z
         .string()
-        .min(2, `Enter ${label.toLowerCase()}.`)
+        .min(1, `Enter ${label.toLowerCase()}.`)
         .max(max, `Use at most ${max} characters.`)
+        .refine((value) => /[\p{L}\p{N}]/u.test(value), `${label} must contain a letter or number.`)
         .refine(
           (value) =>
             Array.from(value).every(

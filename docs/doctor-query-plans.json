@@ -1,0 +1,113 @@
+{
+  "newest": {
+    "returned": 10,
+    "keysExamined": 10,
+    "docsExamined": 10,
+    "plan": {
+      "isCached": false,
+      "stage": "LIMIT",
+      "limitAmount": 10,
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "createdAt": -1,
+            "_id": -1
+          },
+          "indexName": "createdAt_-1__id_-1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "createdAt": [],
+            "_id": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "createdAt": ["[MaxKey, MinKey]"],
+            "_id": ["[MaxKey, MinKey]"]
+          }
+        }
+      }
+    }
+  },
+  "specialization": {
+    "returned": 10,
+    "keysExamined": 10,
+    "docsExamined": 10,
+    "plan": {
+      "isCached": false,
+      "stage": "LIMIT",
+      "limitAmount": 10,
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "specializationKey": 1,
+            "createdAt": -1,
+            "_id": -1
+          },
+          "indexName": "specializationKey_1_createdAt_-1__id_-1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "specializationKey": [],
+            "createdAt": [],
+            "_id": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "specializationKey": ["[\"neurology\", \"neurology\"]"],
+            "createdAt": ["[MaxKey, MinKey]"],
+            "_id": ["[MaxKey, MinKey]"]
+          }
+        }
+      }
+    }
+  },
+  "prefix": {
+    "returned": 1,
+    "keysExamined": 2,
+    "docsExamined": 1,
+    "plan": {
+      "isCached": false,
+      "stage": "SORT",
+      "sortPattern": {
+        "createdAt": -1,
+        "_id": -1
+      },
+      "memLimit": 104857600,
+      "limitAmount": 10,
+      "type": "simple",
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "searchTokens": 1
+          },
+          "indexName": "searchTokens_1",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "searchTokens": ["searchTokens"]
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "searchTokens": ["[\"rareprefix\", \"rareprefiy\")", "[/^rareprefix/, /^rareprefix/]"]
+          }
+        }
+      }
+    }
+  }
+}

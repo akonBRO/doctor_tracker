@@ -30,6 +30,9 @@ export function AdminShell({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const currentLink = links.find(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/'),
+  );
   const [admin, setAdmin] = useState(initialAdmin);
   const [error, setError] = useState('');
   const [menu, setMenu] = useState(false);
@@ -122,14 +125,14 @@ export function AdminShell({
           {links.map((item) => (
             <Link
               key={item.href}
-              className={pathname === item.href ? 'active' : ''}
+              className={currentLink?.href === item.href ? 'active' : ''}
               href={item.href}
               onClick={() => setMenu(false)}
-              aria-current={pathname === item.href ? 'page' : undefined}
+              aria-current={currentLink?.href === item.href ? 'page' : undefined}
             >
               <item.icon size={19} />
               {item.label}
-              {pathname === item.href && <span className="nav-dot" />}
+              {currentLink?.href === item.href && <span className="nav-dot" />}
             </Link>
           ))}
         </nav>
@@ -161,7 +164,7 @@ export function AdminShell({
       <div className="admin-main">
         <div className="admin-topbar">
           <p>
-            Workspace <span>/</span> {links.find((item) => item.href === pathname)?.label}
+            Workspace <span>/</span> {currentLink?.label}
           </p>
           <Link href="/">
             Doctor Tracker <ArrowUpRight size={14} />

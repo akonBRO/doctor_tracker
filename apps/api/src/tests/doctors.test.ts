@@ -130,9 +130,15 @@ describe('doctor creation and security', () => {
   });
   it('accepts international names and formatted international phone numbers without contact uniqueness', async () => {
     for (const phone of ['+44 20 7946 0958', '+1 (212) 555-0123', '01712 345678'])
-      expect((await post({ ...doctor, name: 'ডা. নাদিয়া — José O’Neill', phone })).status).toBe(
-        201,
-      );
+      expect(
+        (
+          await post({
+            ...doctor,
+            name: phone === '01712 345678' ? '李' : 'ডা. নাদিয়া — José O’Neill',
+            phone,
+          })
+        ).status,
+      ).toBe(201);
     expect(await DoctorModel.countDocuments()).toBe(3);
   });
   it.each(['name', 'specialization', 'hospital', 'phone', 'email'])(
@@ -149,6 +155,7 @@ describe('doctor creation and security', () => {
     { phone: '+1 123' },
     { phone: '+1234567890123456' },
     { name: ' '.repeat(20) },
+    { name: '--' },
     { hospital: 'x'.repeat(261) },
     { role: 'admin' },
     { _id: new mongoose.Types.ObjectId().toString() },
@@ -235,6 +242,14 @@ describe('doctor creation and security', () => {
       '?limit=999999',
     ])
       expect([400, 422]).toContain((await get(query)).status);
+    expect(await DoctorModel.countDocuments()).toBe(0);
+  });
+  it('rate-limits doctor writes independently of ordinary browsing', async () => {
+    for (let i = 0; i < 60; i++) expect((await post({})).status).toBe(422);
+    const limited = await post();
+    expect(limited.status).toBe(429);
+    expect(limited.headers['retry-after']).toBeDefined();
+    expect((await get()).status).toBe(200);
     expect(await DoctorModel.countDocuments()).toBe(0);
   });
   it('applies model validation and safely preserves user text instead of rendering HTML', async () => {

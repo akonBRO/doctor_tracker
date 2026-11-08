@@ -1,7 +1,32 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { readFileSync } from 'node:fs';
 
 export default async function setup() {
+  if (process.env.E2E_WEB_MODE !== 'development') {
+    const manifest = JSON.parse(readFileSync('apps/web/.next/routes-manifest.json', 'utf8')) as {
+      rewrites: {
+        beforeFiles?: { source: string; destination: string }[];
+        afterFiles?: { source: string; destination: string }[];
+        fallback?: { source: string; destination: string }[];
+      };
+    };
+    const rewrites = [
+      ...(manifest.rewrites.beforeFiles ?? []),
+      ...(manifest.rewrites.afterFiles ?? []),
+      ...(manifest.rewrites.fallback ?? []),
+    ];
+    if (
+      !rewrites.some(
+        (rewrite) =>
+          rewrite.source === '/api/v1/:path*' &&
+          rewrite.destination === 'http://127.0.0.1:4000/api/v1/:path*',
+      )
+    )
+      throw new Error(
+        'Browser tests require a web build with API_ORIGIN=http://127.0.0.1:4000. Refusing to call another database environment.',
+      );
+  }
   const api = spawn(process.execPath, ['--import', 'tsx', 'scripts/e2e-server.ts'], {
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });

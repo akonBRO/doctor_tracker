@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { WorkspaceFoundation } from '../../../components/workspace-foundation';
+import { DoctorDirectoryPage } from '../../../features/doctors/directory';
 export const metadata: Metadata = { title: 'Doctors' };
 export default function Page() {
-  return <WorkspaceFoundation area="doctors" />;
+  return <DoctorDirectoryPage />;
 }

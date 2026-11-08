@@ -1,6 +1,6 @@
 # Doctor Tracker
 
-A focused administrative workspace for organizing doctors, their patients, and meaningful practice information. This repository currently implements **Stage 1**: an original visual identity, a responsive public website and administrative shell, and real invitation-only administrator authentication with mandatory TOTP multi-factor verification. Doctor/patient management and analytics will be added in later stages; the interface does not present fabricated records or statistics.
+A focused administrative workspace for organizing doctors, their patients, and meaningful practice information. This repository implements **Stages 1–2**: an original visual identity, responsive public and protected interfaces, invitation-only administrator authentication with mandatory MFA, and a real MongoDB-backed doctor directory with creation, search, filters, pagination and details. Patient management and analytics remain for later stages; no fabricated records or statistics are presented as real application data.
 
 Public source: **[akonBRO/doctor_tracker](https://github.com/akonBRO/doctor_tracker)**. Completed updates are committed and pushed to `origin` as requested by the owner. No deployment has been performed.
 
@@ -131,6 +131,25 @@ A password creates only a five-minute pre-authentication challenge. Full access 
 
 Passwords use Argon2id. MFA secrets use AES-256-GCM at rest. Invitations, refresh tokens, and recovery codes are stored only as hashes. Login errors do not reveal whether an email exists. No authentication material is stored in localStorage or sessionStorage. See the [endpoint contract and continuity notes](docs/IMPLEMENTATION_STATUS.md) and [security checklist](docs/SECURITY.md) for exact behavior and boundaries.
 
+## Doctor Management — Stage 2
+
+Use `/doctors` to browse the directory, `/doctors/new` to create a record, and `/doctors/[doctorId]` for practice/contact details. The form contains only name, specialization, hospital, phone and email. Contact fields are not unique; doctors do not receive login accounts. The existing brand, public/auth pages and administrative layout are retained. Narrow screens use structured stacked records rather than a compressed desktop table.
+
+| Method | Endpoint                    | Purpose                                                        |
+| ------ | --------------------------- | -------------------------------------------------------------- |
+| POST   | `/api/v1/doctors`           | Create a validated doctor; administrator + MFA + CSRF required |
+| GET    | `/api/v1/doctors`           | Search/filter/sort/paginate actual records                     |
+| GET    | `/api/v1/doctors/:doctorId` | Validated identifier, protected detail, safe 404               |
+| GET    | `/api/v1/doctors/options`   | Bounded actual specialization/hospital suggestions             |
+
+Directory parameters are `q`, `specialization`, `hospital`, `from`, `to`, `page`, `limit`, and `sort`. Search matches case-insensitive Unicode word prefixes across name, specialization and hospital, with up to five AND-combined words. Practice filters are exact normalized values. Creation-date filters use inclusive **UTC calendar days**, implemented as start-inclusive / next-day-exclusive timestamp bounds. Sorting supports `newest`, `oldest`, `name-asc` and `name-desc`, always with an `_id` tie-breaker. Page size is 1–50 (default 10); pages are 1–10,000. Query timeout is 3 seconds. An out-of-range page returns an empty array with accurate totals and the requested page, with a UI route back to page one.
+
+The URL stores filters, sorting and page state; refresh/back/forward and validated return links preserve context. Input changes reset page one, while “Reset filters” preserves valid sort/page-size preferences. Reads debounce/cancel safely; writes have duplicate-submit protection and keep drafts on recoverable errors. No submitted mutation is automatically replayed.
+
+Indexes cover creation order, normalized name order, individual/combined specialization/hospital filters and normalized multikey search tokens. The directory uses projected lean find/count queries; options alone use bounded distinct-value aggregation. Captured fixture query plans demonstrate index use without claiming production performance. See [Doctor Management](docs/DOCTOR_MANAGEMENT.md) for the schema, index definitions, exact API/date/search semantics, limitations, verification details, and Stage 3 patient integration contract.
+
+Successful browser tests use actual invitations/MFA/doctor APIs and an isolated MongoDB replica set. Only explicit failure/latency cases intercept responses. When a custom `.env` points the web app elsewhere, follow the [safe test-build origin instructions](docs/DOCTOR_MANAGEMENT.md#verification-and-local-execution): Next.js rewrite destinations are baked into the build, and the fixture refuses to target another API environment.
+
 ## Scripts and verification
 
 | Command                               | Operation                                                            |
@@ -173,13 +192,16 @@ Actual verification results and any unfinished checks are recorded in [IMPLEMENT
 
 Screenshots are generated from actual production-browser tests. The workspace screenshot uses an explicitly disposable test administrator, with no patient data.
 
-| Desktop                                                                             | Mobile                                                                            |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| ![Doctor Tracker landing page at 1440 pixels](docs/screenshots/landing-desktop.png) | ![Doctor Tracker landing page at 375 pixels](docs/screenshots/landing-mobile.png) |
-| ![Protected workspace on desktop](docs/screenshots/workspace-desktop.png)           | ![Protected workspace on mobile](docs/screenshots/workspace-mobile.png)           |
+| Desktop                                                                                            | Mobile                                                                                           |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| ![Doctor Tracker landing page at 1440 pixels](docs/screenshots/landing-desktop.png)                | ![Doctor Tracker landing page at 375 pixels](docs/screenshots/landing-mobile.png)                |
+| ![Protected workspace on desktop](docs/screenshots/workspace-desktop.png)                          | ![Protected workspace on mobile](docs/screenshots/workspace-mobile.png)                          |
+| ![Doctor directory with disposable API-created test records](docs/screenshots/doctors-desktop.png) | ![Stacked doctor directory records on mobile](docs/screenshots/doctors-mobile.png)               |
+| ![Five-field doctor creation form](docs/screenshots/doctor-create-desktop.png)                     | ![Doctor creation form on a small phone](docs/screenshots/doctor-create-small-mobile.png)        |
+| ![Saved doctor details](docs/screenshots/doctor-detail-desktop.png)                                | ![Doctor details and future patient integration area](docs/screenshots/doctor-detail-mobile.png) |
 
 ## Current boundaries
 
-Stage 1 has secure account access, the original brand and landing/auth UI, and the protected application shell. Doctor and Patient models, CRUD, indexed clinical search/filter/pagination, doctor-patient relationship validation, and aggregated analytics remain for the following stages. Doctors and patients are managed records, not login accounts.
+Stages 1–2 provide secure account access, the original brand and landing/auth UI, the protected shell, and real doctor creation/directory/search/filter/pagination/detail functionality. Doctor editing/deletion is not specified and is not included. Patient models, doctor-patient relationships and patient CRUD/search/filter/pagination are reserved for Stage 3; analytics remain for a later dashboard stage. Doctors and patients are managed records, not login accounts. Doctor detail pages explicitly mark patient management as unavailable, with no fabricated patient records or counts.
 
 No deployment, production Atlas validation, persistent database installation, email delivery, uploads, webhooks, password reset, or MFA reset has been performed or implied. In-memory rate limits support one API instance; configure a shared store before scaling. The Docker recipe is provided for local persistence but was not run in this environment.
