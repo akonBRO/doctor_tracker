@@ -1,0 +1,33 @@
+{
+  "name": "@doctor-tracker/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "npm run build -w @doctor-tracker/shared",
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "build": "tsc",
+    "start": "node --env-file=.env dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "invite": "tsx --env-file=.env src/cli/invite.ts"
+  },
+  "dependencies": {
+    "@doctor-tracker/shared": "*",
+    "argon2": "latest",
+    "cookie-parser": "latest",
+    "cors": "latest",
+    "express": "5.3.0",
+    "express-rate-limit": "latest",
+    "helmet": "latest",
+    "jose": "latest",
+    "mongoose": "9.12.0",
+    "otplib": "13.6.0",
+    "pino": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "latest",
+    "@types/cors": "latest",
+    "@types/express": "^5.0.0"
+  }
+}

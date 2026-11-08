@@ -1,0 +1,50 @@
+{
+  "name": "doctor-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "scripts": {
+    "dev": "npm run build -w @doctor-tracker/shared && concurrently -k -n api,web \"npm run dev -w @doctor-tracker/api\" \"npm run dev -w @doctor-tracker/web\"",
+    "dev:web": "npm run dev -w @doctor-tracker/web",
+    "dev:api": "npm run dev -w @doctor-tracker/api",
+    "dev:db": "tsx scripts/dev-db.ts",
+    "setup:local": "node scripts/setup-local.mjs",
+    "invite": "npm run invite -w @doctor-tracker/api --",
+    "typecheck": "npm run build -w @doctor-tracker/shared && npm run typecheck --workspaces --if-present && tsc -p tsconfig.tools.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0",
+    "test": "npm run build -w @doctor-tracker/shared && vitest run",
+    "test:e2e": "playwright test",
+    "build": "npm run build -w @doctor-tracker/shared && npm run build -w @doctor-tracker/api && npm run build -w @doctor-tracker/web"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "latest",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "latest",
+    "concurrently": "latest",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.5",
+    "mongodb-memory-server": "latest",
+    "prettier": "^3.9.10",
+    "supertest": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest",
+    "vitest": "latest"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    }
+  }
+}
