@@ -26,21 +26,21 @@
     "build": "npm run build -w @doctor-tracker/shared && npm run build -w @doctor-tracker/api && npm run build -w @doctor-tracker/web"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.14.0",
-    "@eslint/js": "^9.39.5",
-    "@playwright/test": "latest",
-    "@types/node": "^22.0.0",
-    "@types/supertest": "latest",
-    "concurrently": "latest",
-    "eslint": "^9.39.5",
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.20.5",
+    "@types/supertest": "7.2.1",
+    "concurrently": "10.0.7",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",
-    "mongodb-memory-server": "latest",
-    "prettier": "^3.9.10",
-    "supertest": "latest",
-    "tsx": "latest",
-    "typescript": "latest",
-    "typescript-eslint": "latest",
-    "vitest": "latest"
+    "mongodb-memory-server": "11.3.0",
+    "prettier": "3.9.10",
+    "supertest": "7.3.2",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
   },
   "overrides": {
     "@typescript-eslint/typescript-estree": {

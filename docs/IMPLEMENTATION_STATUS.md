@@ -1,6 +1,6 @@
 # Implementation status
 
-Updated 8 November 2026. Scope: **Stage 1 of 6 only**.
+Updated 8 November 2026. Scope: **Stage 1 of 6 only**. Implementation and local verification complete; deployment-specific checks remain below.
 
 ## Completed foundation
 
@@ -57,15 +57,18 @@ TOTP uses 30-second SHA-1 six-digit codes with a 30-second clock tolerance. A mo
 
 Access JWTs expire after five minutes by default and validate HS256, issuer, audience, expiry, subject, session, role, and MFA claims. Every protected API read also checks the database account and session, so revocation is immediate. Refresh tokens are 256-bit random opaque values, stored as SHA-256 hashes, with a seven-day absolute family lifetime by default. Refresh cannot extend that absolute lifetime.
 
-Production cookies use Secure, HttpOnly, SameSite=Strict, Path=/, no Domain, and `__Host-` names. Development permits HTTP localhost cookies. No auth state is stored in localStorage/sessionStorage. The server layout checks identity through Express; expired access cookies use a client gate to refresh before revealing the workspace. Safe identity reads can retry after refresh; mutations never automatically replay.
+Production cookies use Secure, HttpOnly, SameSite=Strict, Path=/, no Domain, and `__Host-` names. Development permits HTTP localhost cookies. No auth state is stored in localStorage/sessionStorage. The server layout checks identity through Express; expired access cookies use a client gate to refresh before revealing the workspace. Safe identity reads can retry after refresh; mutations never automatically replay. Web Locks serialize refreshes across tabs in supported browsers. Older browsers without Web Locks may require signing in again if concurrent refreshes trigger strict replay protection.
 
 ## Verification record
 
 - Passed: strict application type checks, ESLint with zero warnings, and production builds of shared package, Express, and Next.js.
-- Passed: **23 backend/security integration tests** against an actual disposable MongoDB replica set, with real password hashing, crypto, OTPs, and transactions.
+- Passed: **24 backend/security integration tests** against an actual disposable MongoDB replica set, with real password hashing, crypto, OTPs, and transactions, including logout when a refresh cookie is missing.
 - Passed: production dependency audit with zero known vulnerabilities. A scoped override moves the development-only typescript-eslint minimatch dependency to its patched 11.x release; lint verifies compatibility. ESLint 9 remains for compatibility with Next.js's current React/a11y lint plugins.
-- Passed: **8 production Chromium browser tests** at 1440, 768, 375, and 320 pixels, including actual invitation registration, TOTP enrollment, recovery-code acknowledgment, access-cookie expiry and refresh, protected navigation, logout, and unauthenticated redirects. Landing/workspace accessibility scans report zero WCAG A/AA violations and all checked views have no horizontal overflow. Screenshots are committed under `docs/screenshots`.
-- Passed: strict type checking includes test and tooling sources. Final security review and command-line startup/provisioning smoke checks are being completed before the final handoff.
+- Passed: **8 production Chromium browser tests** at 1440, 768, 375, and 320 pixels, including actual invitation registration, TOTP enrollment, recovery-code acknowledgment and recovery login, access-cookie expiry and two-tab refresh, protected navigation, logout, and unauthenticated redirects. Landing, restricted signup, account signup, login, enrollment, and workspace accessibility scans report zero WCAG A/AA violations. Checked views have no horizontal overflow; keyboard skip navigation works. Production screenshots are committed under `docs/screenshots`.
+- Passed: the same **8 browser tests in development mode**, covering Strict Mode's effect replay. Invitation fragment consumption is explicitly guarded against a second effect execution.
+- Passed: strict type checking for apps, shared schemas, tests and tooling; lint with zero warnings; formatting; full and production-only audits with zero vulnerabilities. Direct dependency versions are pinned to the tested lockfile versions.
+- Passed: standalone compiled API startup and `/health`; privileged invitation CLI link generation and hashed-token persistence against a real local disposable replica set. Temporary CLI test invitation was removed and owned servers stopped afterward. Initial local database startup encountered a transient replica-set initialization failure; the retry and subsequent database/API/CLI operations succeeded.
+- Completed: Stage 1 security review against items A–R in `SECURITY.md`. Deployment/infrastructure checks remain explicitly out of scope. GitHub Actions runs the same verification sequence; its first run caught formatting of a generated Next.js declaration file, now excluded from source formatting and Git tracking.
 
 ## Limits and next stages
 

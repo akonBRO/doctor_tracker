@@ -34,11 +34,17 @@ async function send<T>(
     const payload: ApiEnvelope<T> & ApiErrorBody = await response.json();
     // Retry only safe reads. Never replay a mutation with an uncertain outcome.
     if (response.status === 401 && allowRefresh && method === 'GET' && path === '/auth/me') {
-      refreshing ??= send('/auth/refresh', 'POST', {}, false)
-        .then(() => undefined)
-        .finally(() => {
-          refreshing = undefined;
-        });
+      const rotate = async () => {
+        await send('/auth/refresh', 'POST', {}, false);
+      };
+      // Shared cookies rotate once at a time across tabs, avoiding false replay revocation.
+      refreshing ??= (
+        navigator.locks
+          ? navigator.locks.request('doctor-tracker-session-refresh', rotate)
+          : rotate()
+      ).finally(() => {
+        refreshing = undefined;
+      });
       await refreshing;
       return send<T>(path, method, body, false);
     }

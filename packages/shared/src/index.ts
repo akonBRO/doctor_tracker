@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const emailSchema = z
-  .email()
+  .email({ error: 'Enter a valid email address.' })
   .max(254)
   .transform((value) => value.toLowerCase());
 export const passwordSchema = z
@@ -14,10 +14,10 @@ export const passwordSchema = z
   );
 export const loginSchema = z.strictObject({
   email: emailSchema,
-  password: z.string().min(1).max(128),
+  password: z.string().min(1, 'Enter your password.').max(128, 'Use at most 128 characters.'),
 });
 export const signupSchema = z.strictObject({
-  name: z.string().trim().min(2).max(80),
+  name: z.string().trim().min(2, 'Enter your full name.').max(80, 'Use at most 80 characters.'),
   email: emailSchema,
   password: passwordSchema,
   invitation: z.string().regex(/^[a-f0-9]{64}$/),

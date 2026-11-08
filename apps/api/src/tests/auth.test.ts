@@ -359,6 +359,25 @@ describe('sessions and authorization', () => {
       ).status,
     ).toBe(401);
   });
+  it('revokes the family on logout even when the refresh cookie is missing', async () => {
+    const c = await client();
+    const { response } = await enroll(c);
+    const access = responseCookies(response)
+      .find((cookie) => cookie.startsWith('dt_access='))!
+      .split(';')[0]!;
+    expect(
+      (
+        await request(app)
+          .post('/api/v1/auth/logout')
+          .set('Origin', origin)
+          .set('X-CSRF-Token', c.csrf)
+          .set('Cookie', `${access}; dt_csrf=${c.csrf}`)
+          .send({})
+      ).status,
+    ).toBe(200);
+    expect((await c.agent.get('/api/v1/auth/me')).status).toBe(401);
+    expect((await post(c, 'refresh')).status).toBe(401);
+  });
   it('rejects disabled admins and expired refresh tokens', async () => {
     const c = await client();
     await enroll(c);

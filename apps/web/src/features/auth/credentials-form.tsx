@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Eye, EyeOff, KeyRound, Mail, ShieldCheck } from 'lucide-react';
@@ -8,6 +8,7 @@ import { api, ApiError } from '../../lib/api';
 
 export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
   const router = useRouter();
+  const invitationRead = useRef(false);
   const signup = mode === 'signup';
   const [invitation, setInvitation] = useState('');
   const [initialized, setInitialized] = useState(!signup);
@@ -16,12 +17,12 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
   const [error, setError] = useState('');
   const [fields, setFields] = useState<Record<string, string[]>>({});
   useEffect(() => {
-    if (!signup) return;
+    if (!signup || invitationRead.current) return;
+    invitationRead.current = true;
     const token = new URLSearchParams(window.location.hash.slice(1)).get('invite') ?? '';
     // Remove the one-time invitation from the address bar immediately. Keep it in memory only.
     if (window.location.hash) window.history.replaceState(null, '', '/signup');
     // Browser URL state is external to React; read it once after hydration and remove the secret.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- One-time synchronization with the URL fragment, which is unavailable during server rendering.
     setInvitation(token);
     setInitialized(true);
   }, [signup]);

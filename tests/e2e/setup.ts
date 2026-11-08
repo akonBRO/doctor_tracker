@@ -25,13 +25,18 @@ export default async function setup() {
   process.env.E2E_MONGODB_URI = message.uri;
   const web = spawn(
     process.execPath,
-    ['../../node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1'],
+    [
+      '../../node_modules/next/dist/bin/next',
+      process.env.E2E_WEB_MODE === 'development' ? 'dev' : 'start',
+      '--hostname',
+      '127.0.0.1',
+    ],
     {
       cwd: 'apps/web',
       stdio: 'pipe',
       env: {
         ...process.env,
-        NODE_ENV: 'production',
+        NODE_ENV: process.env.E2E_WEB_MODE === 'development' ? 'development' : 'production',
         API_ORIGIN: 'http://127.0.0.1:4000',
         APP_ORIGIN: 'http://localhost:3000',
         NEXT_TELEMETRY_DISABLED: '1',

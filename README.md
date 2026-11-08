@@ -158,6 +158,8 @@ npm run test:e2e
 
 On Linux CI, use `npx playwright install --with-deps chromium`. The browser suite starts both actual apps with an isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 768, 375, and 320 pixels, then tears down its servers. Test identities are disposable; they are never seeded into your configured database.
 
+Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. This development suite has also passed at all four viewport sizes.
+
 For production-process smoke testing locally after a build, run these in separate terminals with your configured database running:
 
 ```sh

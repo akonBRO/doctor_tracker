@@ -12,21 +12,25 @@ async function start() {
     logger.info({ event: 'server_started', port: config.PORT }),
   );
   let stopping = false;
-  async function shutdown() {
+  async function shutdown(exitCode = 0) {
     if (stopping) return;
     stopping = true;
     const timer = setTimeout(() => process.exit(1), 10_000).unref();
     server.close(async () => {
       await mongoose.disconnect();
       clearTimeout(timer);
-      process.exit(0);
+      process.exit(exitCode);
     });
   }
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', () => {
+    void shutdown();
+  });
+  process.on('SIGTERM', () => {
+    void shutdown();
+  });
   server.on('error', () => {
     logger.error({ event: 'server_error' });
-    void shutdown();
+    void shutdown(1);
   });
 }
 start().catch(() => {

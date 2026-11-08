@@ -329,14 +329,38 @@ export class AuthService {
   async logout(req: Request, res: Response) {
     const names = cookieNames(this.config);
     const refresh: unknown = req.cookies[names.refresh];
+    let familyId: string | undefined;
     if (typeof refresh === 'string') {
       const session = await Session.findOne({ tokenHash: hashToken(refresh) });
-      if (session)
-        await Session.updateMany(
-          { familyId: session.familyId },
-          { $set: { revokedAt: new Date() } },
-        );
+      familyId = session?.familyId;
     }
+    if (!familyId) {
+      const token: unknown = req.cookies[names.access];
+      let subject: string | undefined;
+      let sessionId: string | undefined;
+      if (typeof token === 'string') {
+        try {
+          const { payload } = await jwtVerify(token, Buffer.from(this.config.JWT_SECRET, 'hex'), {
+            algorithms: ['HS256'],
+            issuer: 'doctor-tracker-api',
+            audience: 'doctor-tracker-web',
+          });
+          if (
+            typeof payload.sid === 'string' &&
+            mongoose.isObjectIdOrHexString(payload.sid) &&
+            mongoose.isObjectIdOrHexString(payload.sub)
+          ) {
+            subject = payload.sub;
+            sessionId = payload.sid;
+          }
+        } catch {
+          /* An invalid access cookie can still be cleared during idempotent logout. */
+        }
+      }
+      if (subject && sessionId)
+        familyId = (await Session.findOne({ _id: sessionId, adminId: subject }))?.familyId;
+    }
+    if (familyId) await Session.updateMany({ familyId }, { $set: { revokedAt: new Date() } });
     const challenge: unknown = req.cookies[names.challenge];
     if (typeof challenge === 'string')
       await Challenge.deleteOne({ tokenHash: hashToken(challenge) });
