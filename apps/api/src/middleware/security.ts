@@ -68,6 +68,9 @@ function dangerous(value: unknown): boolean {
 export const rejectUnsafeInput: RequestHandler = (req, _res, next) => {
   if (dangerous(req.body) || dangerous(req.query))
     return next(new AppError(400, 'INVALID_INPUT', 'The request contains unsupported input.'));
+  next();
+};
+export const rejectQueryParameters: RequestHandler = (req, _res, next) => {
   if (Object.keys(req.query).length)
     return next(
       new AppError(400, 'INVALID_QUERY', 'Query parameters are not supported on this endpoint.'),

@@ -1,5 +1,16 @@
 # Implementation status
 
+## Stage 2 checkpoint — doctor data and API
+
+Stage 2 is in progress. The standalone Express doctor API and real MongoDB model are implemented; frontend implementation and browser verification are underway. Stage 1 remains the baseline below.
+
+- Added the five doctor fields plus timestamps, derived normalized search/filter keys and word tokens. Contact values are not unique and doctors are not authentication accounts.
+- Added authenticated, MFA-protected `POST /api/v1/doctors`, `GET /api/v1/doctors`, `GET /api/v1/doctors/:doctorId`, and bounded real-value filter suggestions at `GET /api/v1/doctors/options`.
+- Strict schemas cover bodies, query strings and identifiers. Doctor writes use the existing Origin/CSRF/cookie defenses plus an account-scoped creation limit. The existing authentication query-string prohibition remains in force.
+- Indexed Unicode word-prefix search supports up to five AND-combined words across name, specialization and hospital. Exact normalized specialization/hospital filters combine with inclusive UTC record-creation dates, stable allowlisted sorts and server-side pagination (1–50 rows; page 1–10,000).
+- Six intentional indexes support creation order, normalized names, individual/combined practice filters and multikey word-prefix search. On a 250-record test fixture, newest and specialization queries each examined 10 keys/10 documents to return 10; a selective prefix search examined 2 keys/1 document to return 1. The prefix query still required a result sort. These are representative fixture results, not production performance guarantees.
+- Passed: all **70 backend tests** (24 Stage 1 + 46 new Doctor tests), API type checking, full test/tool type checking after fixes, and lint. Full application/browser checks and final documentation remain before Stage 2 completion.
+
 Updated 8 November 2026. Scope: **Stage 1 of 6 only**. Implementation and local verification complete; deployment-specific checks remain below.
 
 ## Completed foundation

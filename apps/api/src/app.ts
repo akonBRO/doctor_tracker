@@ -9,6 +9,7 @@ import { ZodError } from 'zod';
 import { totpSchema, recoverySchema } from '@doctor-tracker/shared';
 import type { Config } from './config/env.js';
 import { AuthService } from './services/auth.js';
+import { doctorRoutes } from './routes/doctors.js';
 import { AppError } from './utils/errors.js';
 import { hashPassword, hashToken, randomToken } from './utils/security.js';
 import {
@@ -18,6 +19,7 @@ import {
   csrfToken,
   validCsrf,
   rejectUnsafeInput,
+  rejectQueryParameters,
 } from './middleware/security.js';
 import { Challenge } from './models/auth.js';
 import { logger } from './utils/logger.js';
@@ -75,12 +77,13 @@ export async function createApp(config: Config) {
       },
     });
   app.use('/api/v1', limiter(200, 60_000));
-  app.get('/api/v1/health', (_req, res) =>
+  app.get('/api/v1/health', rejectQueryParameters, (_req, res) =>
     res
       .status(mongoose.connection.readyState === 1 ? 200 : 503)
       .json({ data: { status: mongoose.connection.readyState === 1 ? 'ok' : 'unavailable' } }),
   );
   const router = express.Router();
+  router.use(rejectQueryParameters);
   router.get('/csrf', (req, res) => {
     const current: unknown = req.cookies[cookieNames(config).csrf];
     const token = validCsrf(current, config) ? current : csrfToken(config);
@@ -158,6 +161,7 @@ export async function createApp(config: Config) {
     res.json({ data: { admin: await auth.authenticate(req) } });
   });
   app.use('/api/v1/auth', router);
+  app.use('/api/v1/doctors', doctorRoutes(auth));
   app.use((_req, _res, next) =>
     next(new AppError(404, 'NOT_FOUND', 'This endpoint does not exist.')),
   );
@@ -197,6 +201,17 @@ export async function createApp(config: Config) {
         error: {
           code: 'REGISTRATION_FAILED',
           message: 'Registration could not be completed. Contact your administrator.',
+          requestId,
+        },
+      });
+      return;
+    }
+    if (error?.code === 50) {
+      res.status(503).json({
+        error: {
+          code: 'QUERY_TIMEOUT',
+          message:
+            'The directory is taking longer than expected. Refine your search and try again.',
           requestId,
         },
       });
