@@ -1,5 +1,38 @@
 # Implementation status
 
+## Stage 5 — quality audit, measured refinements and deployment readiness
+
+Implemented 9 November 2026 from `3695d35f95505be559671936b39c11227a143722` on the selected public `akonBRO/doctor_tracker` main branch. The approved light composition and logo geometry remain. No Stage 6 deployment, Atlas fixture/load operation, environment-file edit, schema migration or unrelated feature was performed.
+
+### Fixed and measured
+
+- Invalid-Origin/CSRF mutations now consume the existing global rate budget before parsing/validation. Deep JSON inspection is iterative with depth/node bounds, fixing the reproduced 9,000-level/54KB input 500. Existing authentication/MFA/body/route limits remain intact.
+- Known-disconnected database requests return sanitized 503 instead of buffering for about ten seconds and returning 500. Stateless CSRF issuance and health remain available; in-flight driver failures are not a new circuit breaker.
+- Browser HTTP exchanges, including body reads, have a 15-second deadline. Missing/malformed envelopes receive safe messages; cancellations stay distinct, uncertain writes are not replayed, and existing no-store/session rotation behavior remains.
+- Doctor-picker keyboard selection, clearing and Escape restore focus to the search input; clicking an already-focused input reopens results. Existing native controls and grouped Bangladesh patient forms are retained.
+- The empty dashboard avoids loading the Recharts plot: observed JS transfer **296,809 → 193,275 bytes (34.88% less)**; decoded JS **991,393 → 627,928 bytes**. Populated charts still load the library, with 1,812 extra transfer bytes from the split module. The complete Bengali font changes TTF → WOFF2, preserving glyphs/shaping/license: observed transfer **305,670 → 244,604 bytes (19.98% less)**.
+- The disposable 200-doctor/4,000-patient before/after profile records browser requests, page/asset/script/paint/layout metrics, HTTP medians/maxima, seven representative query plans and index inventory. API timing was mixed; no API speedup or production capacity claim is made. Existing indexes, URL/server pagination and no-store/freshness behavior remain justified at this scale. Page 300 examines 3,000 keys / ten documents; growing offset/global-count costs remain documented.
+- Doctor date documentation now matches the existing Asia/Dhaka record display. UTC API timestamps, directory date boundaries and analytics buckets remain unchanged. Bangladesh phones, Unicode names, free-text hospitals, dependent division/district selectors, all blood groups/Unknown and sparse legacy updates retain their existing contracts.
+
+### Stage 5 verification
+
+- Baseline: original **204 API tests passed**, production build passed, six production browser baseline checks passed at 1440/320px, and the unchanged-web quality fixture was measured before performance changes.
+- Final `npm test`: **214 passed in six files** (59.38s): the original 204 API tests, three new API abuse/outage tests and seven client transport tests. All use disposable databases or controlled transport units; no Atlas connection is loaded by the test fixtures.
+- Final `npm run typecheck`, `npm run lint`, `npm run format:check` and `npm run build` passed. The final build used explicit isolated 3100/4100 origins. A CSS formatting warning was corrected before the successful final check; unsuccessful exploratory runs are not counted as passes.
+- `npm run test:e2e`: **all 15 production browser checks passed** across 1440, 1024, 768, 375 and 320px. The original auth/CRUD and dashboard cases remain. Successful flows use actual invitation/MFA/cookie sessions, REST APIs and isolated replica-set writes; interception only simulates explicit failures/latency.
+- Dedicated `node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop`: **one additional production quality check passed** (30.8s test / 37.8s runner on the final recheck). It measures the 200/4,000 fixture, checks larger-data overflow/axe at 320px and asserts doctor-picker selection/reopen/Escape/clear focus. The archived comparison is the earlier completed before/after sample pair; timing variation across reruns is expected.
+- Focused development/React Strict Mode dashboard rechecks: **three passed** at 1440, 375 and 320px. Development screenshots remain in ignored `tmp/screenshots-development/`. The full development auth/CRUD suite was not repeated in Stage 5.
+- Full and production-only `npm audit --audit-level=moderate` / `npm audit --omit=dev --audit-level=moderate`: **zero vulnerabilities**. No application dependency was added. Temporary font conversion tooling stays ignored and is not shipped.
+- The **80 current production screenshots** were refreshed across all five widths. The page/state contact sheets were visually reviewed, with native-width phone sections for directories, Bengali identity fields, grouped forms, record detail and charts. Logo SVG files have no Stage 5 changes. WCAG A/AA, 2.1 AA and 2.2 AA-tag axe checks found no violations in tested states; keyboard review found and fixed the picker defect that axe did not report.
+
+The final commit and exact-SHA Actions result are reported in the delivery message. This update uses a normal commit/push without rewriting history or deploying.
+
+See [Stage 5 quality audit](STAGE5_QUALITY_AUDIT.md) for the baseline/findings, page-by-page review, localization, full 20-control security matrix, measured trade-offs, evidence methodology and limits; [quality metrics](quality-metrics.json) for sanitized samples; and [Deployment Readiness](DEPLOYMENT_READINESS.md) for Stage 6 prerequisites. README, Security, Doctor/Patient Management, Dashboard Analytics and Design Redesign are updated to match.
+
+### Remaining limits
+
+No production HTTPS/proxy/cookie smoke test, Atlas load/failover test, larger-scale capacity guarantee, physical-device/assistive-technology audit, full Lighthouse/React Profiler run or certification is claimed. Administrators still share a workspace; tenancy must scope every query/aggregate if introduced. Single-process rate stores need a verified shared store before scaling. Exact counts/global ranking and offset costs grow; independent datasets are not one transactional snapshot. Password/MFA reset, email delivery, uploads and webhooks remain absent. Stage 6 must configure real build/runtime origins, secrets, TLS/proxy trust, least-privileged database access, backups/restore, operator recovery and hosting observability.
+
 ## Stage 4 — admin dashboard and analytics
 
 The dashboard now reads exact Doctor/Patient totals, current assignments per doctor and bounded 7/30/90-day registration trends from secure Express/MongoDB endpoints. Totals remain all-time. Registration buckets use inclusive UTC calendar days including today, with an exclusive next-midnight upper bound; chart labels explicitly say UTC. The update time uses Bangladesh time. Deleted patients leave all metrics, including their historical creation bucket.

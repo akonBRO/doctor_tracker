@@ -13,7 +13,9 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
     );
   const checkA11y = async () => {
     await expect(page).toHaveTitle(/Doctor Tracker/);
-    const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const result = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
     expect(
       result.violations.map((value) => ({
         id: value.id,

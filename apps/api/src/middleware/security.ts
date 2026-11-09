@@ -56,14 +56,25 @@ export function csrfProtection(config: Config): RequestHandler {
   };
 }
 function dangerous(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
-  return Object.entries(value).some(
-    ([key, child]) =>
-      key.startsWith('$') ||
-      key.includes('.') ||
-      ['__proto__', 'constructor', 'prototype'].includes(key) ||
-      dangerous(child),
-  );
+  const pending = [{ value, depth: 0 }];
+  let inspected = 0;
+  while (pending.length) {
+    const current = pending.pop()!;
+    if (!current.value || typeof current.value !== 'object') continue;
+    // Valid registration bodies are shallow. Bound inspection before schema validation,
+    // including on the 64 KiB multilingual patient routes, without recursive stack use.
+    if (current.depth > 32 || ++inspected > 10000) return true;
+    for (const [key, child] of Object.entries(current.value)) {
+      if (
+        key.startsWith('$') ||
+        key.includes('.') ||
+        ['__proto__', 'constructor', 'prototype'].includes(key)
+      )
+        return true;
+      pending.push({ value: child, depth: current.depth + 1 });
+    }
+  }
+  return false;
 }
 export const rejectUnsafeInput: RequestHandler = (req, _res, next) => {
   if (dangerous(req.body) || dangerous(req.query))

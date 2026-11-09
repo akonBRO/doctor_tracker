@@ -12,7 +12,9 @@ export async function patientsFlow(page: Page, info: TestInfo, database: MongoCl
       true,
     );
     await expect(page).toHaveTitle(/Doctor Tracker/);
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
     expect(
       axe.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })),
     ).toEqual([]);

@@ -49,6 +49,19 @@ export async function createApp(config: Config) {
     next();
   });
   app.use(helmet({ hsts: config.COOKIE_SECURE ? undefined : false }));
+  const limiter = (limit: number, windowMs = 15 * 60_000) =>
+    rateLimit({
+      windowMs,
+      limit,
+      standardHeaders: 'draft-8',
+      legacyHeaders: false,
+      handler(_req, _res, next) {
+        next(
+          new AppError(429, 'RATE_LIMITED', 'Too many attempts. Please wait before trying again.'),
+        );
+      },
+    });
+  app.use('/api/v1', limiter(200, 60_000));
   app.use(
     cors({
       origin(origin, callback) {
@@ -75,24 +88,24 @@ export async function createApp(config: Config) {
     (patientWrite ? patientJson : ordinaryJson)(req, res, next);
   }, cookieParser());
   app.use(csrfProtection(config), rejectUnsafeInput);
-  const limiter = (limit: number, windowMs = 15 * 60_000) =>
-    rateLimit({
-      windowMs,
-      limit,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false,
-      handler(_req, _res, next) {
-        next(
-          new AppError(429, 'RATE_LIMITED', 'Too many attempts. Please wait before trying again.'),
-        );
-      },
-    });
-  app.use('/api/v1', limiter(200, 60_000));
   app.get('/api/v1/health', rejectQueryParameters, (_req, res) =>
     res
       .status(mongoose.connection.readyState === 1 ? 200 : 503)
       .json({ data: { status: mongoose.connection.readyState === 1 ? 'ok' : 'unavailable' } }),
   );
+  app.use('/api/v1', (req, _res, next) => {
+    // CSRF issuance is stateless; readiness above remains available during outages.
+    if (req.method === 'GET' && req.path === '/auth/csrf') return next();
+    if (mongoose.connection.readyState !== 1)
+      return next(
+        new AppError(
+          503,
+          'DATABASE_UNAVAILABLE',
+          'The database is temporarily unavailable. Please try again.',
+        ),
+      );
+    next();
+  });
   const router = express.Router();
   router.use(rejectQueryParameters);
   router.get('/csrf', (req, res) => {

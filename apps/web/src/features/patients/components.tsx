@@ -55,6 +55,15 @@ export function DoctorPicker({
   onChange: (id: string) => void;
 }) {
   const id = useId();
+  const input = useRef<HTMLInputElement>(null);
+  const restoringFocus = useRef(false);
+  function restoreFocus() {
+    requestAnimationFrame(() => {
+      restoringFocus.current = true;
+      input.current?.focus({ preventScroll: true });
+      restoringFocus.current = false;
+    });
+  }
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const selected = useRecordQuery<{ doctor: Doctor }>(
@@ -65,7 +74,16 @@ export function DoctorPicker({
     300,
   );
   return (
-    <div className="field doctor-picker">
+    <div
+      className="field doctor-picker"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setOpen(false);
+          restoreFocus();
+        }
+      }}
+    >
       <label htmlFor={id}>Assigned doctor</label>
       {value && (
         <p>
@@ -77,6 +95,7 @@ export function DoctorPicker({
             onClick={() => {
               onChange('');
               setOpen(true);
+              restoreFocus();
             }}
           >
             Clear doctor
@@ -85,17 +104,18 @@ export function DoctorPicker({
       )}
       <input
         id={id}
+        ref={input}
+        onClick={() => setOpen(true)}
         type="search"
         value={search}
         placeholder="Find a doctor by name"
         maxLength={120}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          if (!restoringFocus.current) setOpen(true);
+        }}
         onChange={(e) => {
           setSearch(e.target.value);
           setOpen(true);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') setOpen(false);
         }}
         aria-describedby={`${id}-hint`}
       />
@@ -116,6 +136,7 @@ export function DoctorPicker({
                         onChange(d.id);
                         setOpen(false);
                         setSearch('');
+                        restoreFocus();
                       }}
                     >
                       {d.name}

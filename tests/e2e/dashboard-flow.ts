@@ -11,7 +11,9 @@ export async function dashboardFlow(page: Page, info: TestInfo, database: MongoC
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
     expect(
       axe.violations.map((item) => ({
         id: item.id,
@@ -256,7 +258,7 @@ export async function dashboardFlow(page: Page, info: TestInfo, database: MongoC
   );
   await page.getByLabel('Period', { exact: true }).selectOption('90d');
   await expect(
-    page.getByText('The dashboard received invalid data. Please try again.', { exact: true }),
+    page.getByText('The service returned an invalid response. Please try again.', { exact: true }),
   ).toBeVisible();
   await page.unroute('**/api/v1/dashboard/trends?*');
   await page.getByRole('button', { name: 'Try again', exact: true }).click();

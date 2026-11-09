@@ -2,6 +2,16 @@
 
 This is an application foundation, not a claim of regulatory compliance or a penetration-test certification. Do not store real patient information until the applicable record security, operating controls, backups, and deployment review are complete.
 
+## Stage 5 audit and hardening
+
+The [Stage 5 quality audit](STAGE5_QUALITY_AUDIT.md#security-audit-matrix--all-20-controls) records all 20 requested controls, source/test evidence, remediation and remaining limits. This is a local code/integration/browser audit, not a penetration-test or compliance certification.
+
+Three reproduced availability defects were fixed: global rate limiting now runs before CORS/body/CSRF processing so rejected mutations consume the budget; unsafe-key inspection is iterative and bounded to depth 32 / 10,000 object nodes; known-disconnected database requests return sanitized 503 before Mongoose buffering. Health remains available and stateless CSRF issuance remains possible. Existing body sizes, endpoint/account/MFA budgets, authentication and authorization remain intact. The single-process memory-store limitation remains.
+
+Each browser HTTP exchange, including response-body parsing, now has a 15-second deadline. Caller cancellation stays distinct. Missing/malformed envelopes return sanitized errors; uncertain writes require checking current state and are never automatically replayed. A refresh chain can contain multiple bounded exchanges. Existing no-store behavior, HttpOnly cookies and in-memory-only CSRF handling are retained.
+
+The original 204 API cases remain, with three new abuse/outage cases and seven client transport regressions (214 total tests). Browser accessibility checks include WCAG 2.2 AA-tag rules. Full and production-only npm audits reported zero vulnerabilities on 9 November 2026; this is not a guarantee against future advisories. No runtime dependency, persistent environment value, secret, Atlas record or encryption key was changed. See [Deployment Readiness](DEPLOYMENT_READINESS.md) for the Stage 6 HTTPS/proxy/cookie, process-count, backup/recovery and operational gates.
+
 ## Stage 4 analytics controls
 
 Every analytics endpoint uses the existing verified administrator/MFA/database-session guard, plus service-level role checks. The authorization scope remains the shared admin workspace; query parameters cannot supply tenant/resource scopes or arbitrary aggregate stages. Strict schemas bound periods to 7/30/90 days and distribution pages to at most 20 doctors. Unsupported query keys, operators, repeated parameters, arbitrary sort fields and identifiers are rejected.
@@ -40,7 +50,7 @@ See [Doctor Management](DOCTOR_MANAGEMENT.md) for current endpoints, measured in
 
 | Requirement              | Stage 1 control / applicability                                                                                                                                                                                                                                      |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A. Injection / pollution | Strict shared Zod objects; bounded JSON; recursive operator, dotted-key, prototype-key rejection; scalar query construction; no untrusted objects passed to Mongoose. No SQL component.                                                                              |
+| A. Injection / pollution | Strict shared Zod objects; bounded JSON; iterative depth/node-bounded operator, dotted-key, prototype-key rejection; scalar query construction; no untrusted objects passed to Mongoose. No SQL component.                                                           |
 | B. XSS                   | React text escaping; no raw HTML rendering; nonce-based production script/style CSP; frame and MIME protections; self-hosted fonts; no remote scripts. Development allows eval/style injection for Next tooling only.                                                |
 | C. CSRF                  | HMAC-signed double-submit token, constant-time comparison, HttpOnly host-only cookie, exact Origin checks, JSON-only mutations, SameSite=Strict. Login/signup/logout/refresh/MFA are all covered.                                                                    |
 | D. BOLA/IDOR             | Identity comes from verified tokens and database state. `/me` cannot select another admin by ID. Doctor endpoints require verified admin access to the shared workspace; patient relationships and future tenancy require scoped queries.                            |

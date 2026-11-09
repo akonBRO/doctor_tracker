@@ -172,22 +172,31 @@ The light dashboard combines a two-value summary strip, a Recharts line chart wi
 
 See [Dashboard Analytics](docs/DASHBOARD_ANALYTICS.md) for contracts, UTC/Bangladesh date semantics, query/index evidence, freshness, security, screenshots and limitations.
 
+## Quality and readiness — Stage 5
+
+Stage 5 retains the approved light UI and fixes reproduced availability, transport and keyboard-focus defects. Rejected mutations now consume the global abuse budget; deep JSON is inspected without recursion; known database outages return 503 promptly. Browser exchanges have bounded deadlines and safe malformed-response handling without replaying writes. Doctor selection/Escape returns keyboard focus to the search field.
+
+The empty dashboard conditionally loads its chart: local cold-context JS transfer fell from 296,809 to 193,275 bytes. The complete self-hosted Bengali font now uses WOFF2, reducing observed font transfer from 305,670 to 244,604 bytes without glyph subsetting. Populated chart transfer has a small split-module overhead; API timing results were mixed. Existing indexes, offset pagination and no-store/freshness policy are retained on measured evidence.
+
+See the [Stage 5 quality audit](docs/STAGE5_QUALITY_AUDIT.md) for page review, reproducible 200-doctor/4,000-patient measurements, all 20 security controls, accessibility and explicit limits. [Deployment Readiness](docs/DEPLOYMENT_READINESS.md) defines Stage 6 requirements. No deployment was performed and no persistent Atlas data or environment file was changed.
+
 ## Scripts and verification
 
-| Command                               | Operation                                                              |
-| ------------------------------------- | ---------------------------------------------------------------------- |
-| `npm run dev`                         | Both apps, with independent processes                                  |
-| `npm run dev:web` / `npm run dev:api` | Run one application                                                    |
-| `npm run dev:db`                      | Disposable real MongoDB replica set                                    |
-| `npm run setup:local`                 | Create ignored local environments and strong random keys               |
-| `npm run invite -- email`             | Create a private one-time administrator invitation                     |
-| `npm run typecheck`                   | Strict checks for apps, shared schemas, tests and tooling              |
-| `npm run lint`                        | ESLint; zero warnings permitted                                        |
-| `npm run format:check`                | Check formatting                                                       |
-| `npm test`                            | Security/integration tests with a fresh MongoDB replica set            |
-| `npm run build`                       | Shared package, Express and production Next.js builds                  |
-| `npm run test:e2e`                    | Isolated Chromium tests on 3100/4100; use the test build origins below |
-| `npm audit` / `npm audit --omit=dev`  | Full / production vulnerability audits                                 |
+| Command                                                                 | Operation                                                                    |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`                                                           | Both apps, with independent processes                                        |
+| `npm run dev:web` / `npm run dev:api`                                   | Run one application                                                          |
+| `npm run dev:db`                                                        | Disposable real MongoDB replica set                                          |
+| `npm run setup:local`                                                   | Create ignored local environments and strong random keys                     |
+| `npm run invite -- email`                                               | Create a private one-time administrator invitation                           |
+| `npm run typecheck`                                                     | Strict checks for apps, shared schemas, tests and tooling                    |
+| `npm run lint`                                                          | ESLint; zero warnings permitted                                              |
+| `npm run format:check`                                                  | Check formatting                                                             |
+| `npm test`                                                              | Security/integration tests with a fresh MongoDB replica set                  |
+| `npm run build`                                                         | Shared package, Express and production Next.js builds                        |
+| `npm run test:e2e`                                                      | Isolated Chromium tests on 3100/4100; use the test build origins below       |
+| `node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop` | Additional isolated 200-doctor/4,000-patient browser/performance/focus audit |
+| `npm audit` / `npm audit --omit=dev`                                    | Full / production vulnerability audits                                       |
 
 For browser tests, install Chromium once:
 
@@ -230,6 +239,6 @@ Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creati
 
 ## Current boundaries
 
-Stages 1-4 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, and aggregate dashboard reporting. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
+Stages 1-5 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, aggregate dashboard reporting and measured quality refinements. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
 
-Stage 5 workload refinements and Stage 6 deployment remain future work. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stage 4 uses disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.
+Stage 6 deployment remains future work. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stages 4-5 use disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

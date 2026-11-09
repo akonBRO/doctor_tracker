@@ -111,7 +111,7 @@ PATCH validates at the route and service boundaries and applies literal field va
 
 ## Interface and state
 
-The patient editor uses five sections: Personal information, Address, Emergency contact, Medical information and Assigned doctor. Desktop fields form two columns; phones use one. Constrained values use native selects. The doctor picker searches actual stored doctors; no ObjectId entry is shown. A doctor's Add patient action locks assignment automatically. The global form allows a searchable doctor choice. Existing assignment cannot be changed by editing.
+The patient editor uses five sections: Personal information, Address, Emergency contact, Medical information and Assigned doctor. Desktop fields form two columns; phones use one. Constrained values use native selects. The doctor picker searches actual stored doctors; no ObjectId entry is shown. A doctor's Add patient action locks assignment automatically. The global form allows a searchable doctor choice. Stage 5 restores focus to its search field after selection/clear/Escape and lets a click reopen an already-focused field. Existing assignment cannot be changed by editing.
 
 The directory includes clickable names, age/gender where recorded, condition, mobile, doctor and record actions. On narrow screens it becomes labeled records. Doctor details have an actual filtered patient count, search, pagination, creation and edit/delete links. Scoped search is stored in `patientQ`; changing it resets `patientPage`. The global directory preserves its own search/filter/sort/page state in the URL.
 

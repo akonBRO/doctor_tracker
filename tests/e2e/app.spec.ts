@@ -12,7 +12,9 @@ let database: InstanceType<typeof MongoClient>;
 
 async function checkAccessibility(page: Page) {
   await expect(page).toHaveTitle(/Doctor Tracker/);
-  const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const result = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
   expect(
     result.violations.map((violation) => ({
       id: violation.id,

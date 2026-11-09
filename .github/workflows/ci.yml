@@ -26,4 +26,5 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop
       - run: npm audit --audit-level=moderate

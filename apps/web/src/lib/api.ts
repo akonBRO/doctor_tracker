@@ -12,6 +12,53 @@ export class ApiError extends Error {
 }
 let csrf: string | undefined;
 let refreshing: Promise<void> | undefined;
+async function exchange<T>(path: string, method: string, body: unknown, signal?: AbortSignal) {
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), 15_000);
+  const combined = signal ? AbortSignal.any([signal, deadline.signal]) : deadline.signal;
+  try {
+    const response = await fetch(`/api/v1${path}`, {
+      method,
+      credentials: 'same-origin',
+      cache: 'no-store',
+      signal: combined,
+      headers:
+        method !== 'GET' ? { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf! } : {},
+      ...(method !== 'GET' ? { body: JSON.stringify(body ?? {}) } : {}),
+    });
+    const invalid = () =>
+      new ApiError(
+        response.ok ? 502 : response.status,
+        'INVALID_RESPONSE',
+        method === 'GET'
+          ? 'The service returned an invalid response. Please try again.'
+          : 'The service returned an invalid response. Check the current state before submitting again.',
+      );
+    let payload: ApiEnvelope<T> & ApiErrorBody;
+    try {
+      payload = await response.json();
+    } catch (error) {
+      if (combined.aborted) throw error;
+      throw invalid();
+    }
+    if (!payload || typeof payload !== 'object' || (response.ok && !Object.hasOwn(payload, 'data')))
+      throw invalid();
+    return { response, payload };
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (deadline.signal.aborted)
+      throw new ApiError(
+        0,
+        'REQUEST_TIMEOUT',
+        method === 'GET'
+          ? 'The request timed out. Please try again.'
+          : 'The request timed out. Its result is uncertain. Check the current state before submitting again.',
+      );
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 async function send<T>(
   path: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
@@ -24,16 +71,7 @@ async function send<T>(
       const data = await send<{ token: string }>('/auth/csrf', 'GET', undefined, false);
       csrf = data.token;
     }
-    const response = await fetch(`/api/v1${path}`, {
-      method,
-      credentials: 'same-origin',
-      cache: 'no-store',
-      signal,
-      headers:
-        method !== 'GET' ? { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf! } : {},
-      ...(method !== 'GET' ? { body: JSON.stringify(body ?? {}) } : {}),
-    });
-    const payload: ApiEnvelope<T> & ApiErrorBody = await response.json();
+    const { response, payload } = await exchange<T>(path, method, body, signal);
     // Retry only safe reads. Never replay a mutation with an uncertain outcome.
     if (
       response.status === 401 &&

@@ -44,7 +44,7 @@ MongoDB supplies `_id`, `createdAt`, and `updatedAt`. The public projection expo
 | `page`           | Integer 1–10,000; default 1                                                                                                                             |
 | `limit`          | Integer 1–50; default 10; UI offers 10, 25, 50 and respects valid custom URL sizes                                                                      |
 
-Both date boundaries are inclusive **calendar days in UTC**. The UI says “Added from (UTC)” and “Added through (UTC)”; these are record-creation dates, not appointment dates. Impossible dates and reversed ranges receive 422. Dates displayed in records are also UTC, independent of browser/host timezone.
+Both date boundaries are inclusive **calendar days in UTC**. The UI says “Added from (UTC)” and “Added through (UTC)”; these are record-creation dates, not appointment dates. Impossible dates and reversed ranges receive 422. Record displays use day-first formatting in **Asia/Dhaka**, independent of browser/host timezone; API timestamps remain ISO UTC.
 
 Example (illustrative query, not seeded production data):
 

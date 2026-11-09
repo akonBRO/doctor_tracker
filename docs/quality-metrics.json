@@ -1,0 +1,870 @@
+{
+  "baselineCommit": "3695d35f95505be559671936b39c11227a143722",
+  "capturedDate": "2026-11-09",
+  "notes": [
+    "Local unthrottled production build on Windows; not a production SLA or field CWV result.",
+    "Ready includes 500ms network-idle stabilization. Three cold-context page samples, warm API/database; five API samples.",
+    "Baseline index names omitted because the original collector also traversed rejected plans; key/document counts remain valid. Final names are from winning plans.",
+    "The browser quality regression can be rerun without an expectation of identical timings."
+  ],
+  "baseline": {
+    "phase": "baseline",
+    "node": "v22.16.0",
+    "browser": "158.0.8127.18",
+    "fixture": {
+      "doctors": 200,
+      "patients": 4000
+    },
+    "conditions": "Loopback production build; no throttling; fresh browser context for each page sample; warm API/database; three page samples and five API samples.",
+    "pages": {
+      "emptyDashboard": {
+        "samples": [
+          {
+            "readyMs": 817.3525999999997,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 144,
+            "cls": 9.303004888840665e-5,
+            "scriptMs": 89.99300000000001
+          },
+          {
+            "readyMs": 999.2101000000002,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 60,
+            "cls": 0.06202535337094907,
+            "scriptMs": 105.086
+          },
+          {
+            "readyMs": 983.2190999999993,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 64,
+            "cls": 0.06202535337094907,
+            "scriptMs": 93.014
+          }
+        ],
+        "median": {
+          "readyMs": 983.2190999999993,
+          "requests": 3,
+          "jsDecodedBytes": 991393,
+          "jsTransferBytes": 296809,
+          "fontTransferBytes": 0,
+          "fcpMs": 64,
+          "cls": 0.06202535337094907,
+          "scriptMs": 93.014
+        }
+      },
+      "dashboard": {
+        "samples": [
+          {
+            "readyMs": 1101.2564999999995,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 52,
+            "cls": 0.06621287826726466,
+            "scriptMs": 147.40800000000002
+          },
+          {
+            "readyMs": 1088.6183,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.05767538164303626,
+            "scriptMs": 154.524
+          },
+          {
+            "readyMs": 1080.991899999999,
+            "requests": 3,
+            "jsDecodedBytes": 991393,
+            "jsTransferBytes": 296809,
+            "fontTransferBytes": 0,
+            "fcpMs": 52,
+            "cls": 0.05767538164303626,
+            "scriptMs": 151.78
+          }
+        ],
+        "median": {
+          "readyMs": 1088.6183,
+          "requests": 3,
+          "jsDecodedBytes": 991393,
+          "jsTransferBytes": 296809,
+          "fontTransferBytes": 0,
+          "fcpMs": 52,
+          "cls": 0.05767538164303626,
+          "scriptMs": 151.78
+        }
+      },
+      "doctors": {
+        "samples": [
+          {
+            "readyMs": 1333.178600000001,
+            "requests": 1,
+            "jsDecodedBytes": 624465,
+            "jsTransferBytes": 192038,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.055567403549382714,
+            "scriptMs": 63.178
+          },
+          {
+            "readyMs": 1302.1433000000015,
+            "requests": 1,
+            "jsDecodedBytes": 624465,
+            "jsTransferBytes": 192038,
+            "fontTransferBytes": 0,
+            "fcpMs": 44,
+            "cls": 0.055567403549382714,
+            "scriptMs": 62.514
+          },
+          {
+            "readyMs": 1306.6402999999991,
+            "requests": 1,
+            "jsDecodedBytes": 624465,
+            "jsTransferBytes": 192038,
+            "fontTransferBytes": 0,
+            "fcpMs": 48,
+            "cls": 0.055567403549382714,
+            "scriptMs": 63.762
+          }
+        ],
+        "median": {
+          "readyMs": 1306.6402999999991,
+          "requests": 1,
+          "jsDecodedBytes": 624465,
+          "jsTransferBytes": 192038,
+          "fontTransferBytes": 0,
+          "fcpMs": 48,
+          "cls": 0.055567403549382714,
+          "scriptMs": 63.178
+        }
+      },
+      "patients": {
+        "samples": [
+          {
+            "readyMs": 1364.3131000000012,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 0,
+            "fcpMs": 64,
+            "cls": 0.05556804783950617,
+            "scriptMs": 57.332
+          },
+          {
+            "readyMs": 1129.457699999999,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 0,
+            "fcpMs": 84,
+            "cls": 0.003096426685474537,
+            "scriptMs": 54.544000000000004
+          },
+          {
+            "readyMs": 1332.6252999999997,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 0,
+            "fcpMs": 48,
+            "cls": 0.05556804783950617,
+            "scriptMs": 58.957
+          }
+        ],
+        "median": {
+          "readyMs": 1332.6252999999997,
+          "requests": 1,
+          "jsDecodedBytes": 646698,
+          "jsTransferBytes": 197387,
+          "fontTransferBytes": 0,
+          "fcpMs": 64,
+          "cls": 0.05556804783950617,
+          "scriptMs": 57.332
+        }
+      },
+      "doctorDetail": {
+        "samples": [
+          {
+            "readyMs": 1100.6648000000023,
+            "requests": 2,
+            "jsDecodedBytes": 651070,
+            "jsTransferBytes": 199501,
+            "fontTransferBytes": 0,
+            "fcpMs": 76,
+            "cls": 0.00012488854679060571,
+            "scriptMs": 63.645999999999994
+          },
+          {
+            "readyMs": 1306.806999999997,
+            "requests": 2,
+            "jsDecodedBytes": 651070,
+            "jsTransferBytes": 199501,
+            "fontTransferBytes": 0,
+            "fcpMs": 44,
+            "cls": 0.05566319058641975,
+            "scriptMs": 62.63399999999999
+          },
+          {
+            "readyMs": 1088.3234000000011,
+            "requests": 2,
+            "jsDecodedBytes": 651070,
+            "jsTransferBytes": 199501,
+            "fontTransferBytes": 0,
+            "fcpMs": 104,
+            "cls": 0.00010763503086419753,
+            "scriptMs": 62.88399999999999
+          }
+        ],
+        "median": {
+          "readyMs": 1100.6648000000023,
+          "requests": 2,
+          "jsDecodedBytes": 651070,
+          "jsTransferBytes": 199501,
+          "fontTransferBytes": 0,
+          "fcpMs": 76,
+          "cls": 0.00012488854679060571,
+          "scriptMs": 62.88399999999999
+        }
+      },
+      "patientEdit": {
+        "samples": [
+          {
+            "readyMs": 742.9647000000004,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 305670,
+            "fcpMs": 100,
+            "cls": 1.712962962962963e-5,
+            "scriptMs": 48.242
+          },
+          {
+            "readyMs": 733.1453000000001,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 305670,
+            "fcpMs": 68,
+            "cls": 3.438314555603781e-5,
+            "scriptMs": 47.687
+          },
+          {
+            "readyMs": 951.0010999999977,
+            "requests": 1,
+            "jsDecodedBytes": 646698,
+            "jsTransferBytes": 197387,
+            "fontTransferBytes": 305670,
+            "fcpMs": 48,
+            "cls": 0.05557268518518518,
+            "scriptMs": 49.42
+          }
+        ],
+        "median": {
+          "readyMs": 742.9647000000004,
+          "requests": 1,
+          "jsDecodedBytes": 646698,
+          "jsTransferBytes": 197387,
+          "fontTransferBytes": 305670,
+          "fcpMs": 68,
+          "cls": 3.438314555603781e-5,
+          "scriptMs": 48.242
+        }
+      }
+    },
+    "api": {
+      "overview": {
+        "medianMs": 10.067000000002736,
+        "maxMs": 17.519600000003265,
+        "responseBytes": 84
+      },
+      "distribution": {
+        "medianMs": 42.06680000000051,
+        "maxMs": 43.53519999999844,
+        "responseBytes": 2126
+      },
+      "trends": {
+        "medianMs": 13.702300000000832,
+        "maxMs": 14.132700000001932,
+        "responseBytes": 1613
+      },
+      "doctors": {
+        "medianMs": 10.10200000000259,
+        "maxMs": 10.238199999999779,
+        "responseBytes": 2852
+      },
+      "doctorSearch": {
+        "medianMs": 9.07850000000326,
+        "maxMs": 11.922899999997753,
+        "responseBytes": 396
+      },
+      "patients": {
+        "medianMs": 11.382900000000518,
+        "maxMs": 11.700300000000425,
+        "responseBytes": 4183
+      },
+      "patientFilter": {
+        "medianMs": 11.525799999999435,
+        "maxMs": 13.00380000000223,
+        "responseBytes": 4179
+      },
+      "deepPatients": {
+        "medianMs": 13.619900000001508,
+        "maxMs": 14.4887000000017,
+        "responseBytes": 4184
+      }
+    },
+    "accessibility": {
+      "dashboard": [],
+      "patients": [],
+      "patientEdit": []
+    },
+    "queries": {
+      "doctorNewest": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10
+      },
+      "doctorCombinedFilter": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10
+      },
+      "doctorPrefix": {
+        "keysExamined": 2,
+        "documentsExamined": 1,
+        "returned": 1
+      },
+      "patientNewest": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10
+      },
+      "patientDoctorCondition": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10
+      },
+      "patientPrefix": {
+        "keysExamined": 2,
+        "documentsExamined": 1,
+        "returned": 1
+      },
+      "patientDeepOffset": {
+        "keysExamined": 3000,
+        "documentsExamined": 10,
+        "returned": 10
+      }
+    },
+    "indexes": {
+      "doctors": [
+        {
+          "_id": 1
+        },
+        {
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "nameKey": 1,
+          "_id": 1
+        },
+        {
+          "specializationKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "hospitalKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "specializationKey": 1,
+          "hospitalKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "searchTokens": 1
+        }
+      ],
+      "patients": [
+        {
+          "_id": 1
+        },
+        {
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "nameKey": 1,
+          "_id": 1
+        },
+        {
+          "doctorId": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "conditionKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "doctorId": 1,
+          "conditionKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "searchTokens": 1
+        }
+      ]
+    }
+  },
+  "after": {
+    "phase": "after",
+    "node": "v22.16.0",
+    "browser": "158.0.8127.18",
+    "fixture": {
+      "doctors": 200,
+      "patients": 4000
+    },
+    "conditions": "Loopback production build; no throttling; fresh browser context for each page sample; warm API/database; three page samples and five API samples.",
+    "pages": {
+      "emptyDashboard": {
+        "samples": [
+          {
+            "readyMs": 971.6222000000002,
+            "requests": 3,
+            "jsDecodedBytes": 627928,
+            "jsTransferBytes": 193275,
+            "fontTransferBytes": 0,
+            "fcpMs": 80,
+            "cls": 0.06202535337094907,
+            "scriptMs": 69.116
+          },
+          {
+            "readyMs": 961.5284000000001,
+            "requests": 3,
+            "jsDecodedBytes": 627928,
+            "jsTransferBytes": 193275,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.059544857554494596,
+            "scriptMs": 70.786
+          },
+          {
+            "readyMs": 955.4242999999997,
+            "requests": 3,
+            "jsDecodedBytes": 627928,
+            "jsTransferBytes": 193275,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.06202535337094907,
+            "scriptMs": 64.32499999999999
+          }
+        ],
+        "median": {
+          "readyMs": 961.5284000000001,
+          "requests": 3,
+          "jsDecodedBytes": 627928,
+          "jsTransferBytes": 193275,
+          "fontTransferBytes": 0,
+          "fcpMs": 56,
+          "cls": 0.06202535337094907,
+          "scriptMs": 69.116
+        }
+      },
+      "dashboard": {
+        "samples": [
+          {
+            "readyMs": 847.5465999999997,
+            "requests": 3,
+            "jsDecodedBytes": 997340,
+            "jsTransferBytes": 298621,
+            "fontTransferBytes": 0,
+            "fcpMs": 88,
+            "cls": 0.0022075897744261185,
+            "scriptMs": 115.657
+          },
+          {
+            "readyMs": 1050.3036000000002,
+            "requests": 3,
+            "jsDecodedBytes": 997340,
+            "jsTransferBytes": 298621,
+            "fontTransferBytes": 0,
+            "fcpMs": 64,
+            "cls": 0.06621287826726466,
+            "scriptMs": 122.223
+          },
+          {
+            "readyMs": 1052.8608999999997,
+            "requests": 3,
+            "jsDecodedBytes": 997340,
+            "jsTransferBytes": 298621,
+            "fontTransferBytes": 0,
+            "fcpMs": 52,
+            "cls": 0.06621287826726466,
+            "scriptMs": 119.248
+          }
+        ],
+        "median": {
+          "readyMs": 1050.3036000000002,
+          "requests": 3,
+          "jsDecodedBytes": 997340,
+          "jsTransferBytes": 298621,
+          "fontTransferBytes": 0,
+          "fcpMs": 64,
+          "cls": 0.06621287826726466,
+          "scriptMs": 119.248
+        }
+      },
+      "doctors": {
+        "samples": [
+          {
+            "readyMs": 1326.8914999999997,
+            "requests": 1,
+            "jsDecodedBytes": 625267,
+            "jsTransferBytes": 192443,
+            "fontTransferBytes": 0,
+            "fcpMs": 64,
+            "cls": 0.055567403549382714,
+            "scriptMs": 64.52
+          },
+          {
+            "readyMs": 1321.5334000000003,
+            "requests": 1,
+            "jsDecodedBytes": 625267,
+            "jsTransferBytes": 192443,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.055567403549382714,
+            "scriptMs": 68.253
+          },
+          {
+            "readyMs": 1326.417300000001,
+            "requests": 1,
+            "jsDecodedBytes": 625267,
+            "jsTransferBytes": 192443,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.055567403549382714,
+            "scriptMs": 65.192
+          }
+        ],
+        "median": {
+          "readyMs": 1326.417300000001,
+          "requests": 1,
+          "jsDecodedBytes": 625267,
+          "jsTransferBytes": 192443,
+          "fontTransferBytes": 0,
+          "fcpMs": 56,
+          "cls": 0.055567403549382714,
+          "scriptMs": 65.192
+        }
+      },
+      "patients": {
+        "samples": [
+          {
+            "readyMs": 1404.5380000000005,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 0,
+            "fcpMs": 64,
+            "cls": 0.05556804783950617,
+            "scriptMs": 62.122
+          },
+          {
+            "readyMs": 1367.5249999999978,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.05556804783950617,
+            "scriptMs": 66.14299999999999
+          },
+          {
+            "readyMs": 1375.322400000001,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 0,
+            "fcpMs": 56,
+            "cls": 0.05556804783950617,
+            "scriptMs": 59.962
+          }
+        ],
+        "median": {
+          "readyMs": 1375.322400000001,
+          "requests": 1,
+          "jsDecodedBytes": 647718,
+          "jsTransferBytes": 197858,
+          "fontTransferBytes": 0,
+          "fcpMs": 56,
+          "cls": 0.05556804783950617,
+          "scriptMs": 62.122
+        }
+      },
+      "doctorDetail": {
+        "samples": [
+          {
+            "readyMs": 1372.9657000000007,
+            "requests": 2,
+            "jsDecodedBytes": 652090,
+            "jsTransferBytes": 199972,
+            "fontTransferBytes": 0,
+            "fcpMs": 60,
+            "cls": 0.05555555555555555,
+            "scriptMs": 66.488
+          },
+          {
+            "readyMs": 1116.4619999999995,
+            "requests": 2,
+            "jsDecodedBytes": 652090,
+            "jsTransferBytes": 199972,
+            "fontTransferBytes": 0,
+            "fcpMs": 76,
+            "cls": 0.00012488854679060571,
+            "scriptMs": 62.730999999999995
+          },
+          {
+            "readyMs": 1355.3508999999976,
+            "requests": 2,
+            "jsDecodedBytes": 652090,
+            "jsTransferBytes": 199972,
+            "fontTransferBytes": 0,
+            "fcpMs": 52,
+            "cls": 0.05566319058641975,
+            "scriptMs": 68.388
+          }
+        ],
+        "median": {
+          "readyMs": 1355.3508999999976,
+          "requests": 2,
+          "jsDecodedBytes": 652090,
+          "jsTransferBytes": 199972,
+          "fontTransferBytes": 0,
+          "fcpMs": 60,
+          "cls": 0.05555555555555555,
+          "scriptMs": 66.488
+        }
+      },
+      "patientEdit": {
+        "samples": [
+          {
+            "readyMs": 989.8269,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 244604,
+            "fcpMs": 52,
+            "cls": 0.05557268518518518,
+            "scriptMs": 56.862
+          },
+          {
+            "readyMs": 964.9241999999977,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 244604,
+            "fcpMs": 48,
+            "cls": 0.05557268518518518,
+            "scriptMs": 53.064
+          },
+          {
+            "readyMs": 732.4377000000022,
+            "requests": 1,
+            "jsDecodedBytes": 647718,
+            "jsTransferBytes": 197858,
+            "fontTransferBytes": 244604,
+            "fcpMs": 72,
+            "cls": 3.438314555603781e-5,
+            "scriptMs": 47.857
+          }
+        ],
+        "median": {
+          "readyMs": 964.9241999999977,
+          "requests": 1,
+          "jsDecodedBytes": 647718,
+          "jsTransferBytes": 197858,
+          "fontTransferBytes": 244604,
+          "fcpMs": 52,
+          "cls": 0.05557268518518518,
+          "scriptMs": 53.064
+        }
+      }
+    },
+    "api": {
+      "overview": {
+        "medianMs": 11.95929999999862,
+        "maxMs": 21.773400000001857,
+        "responseBytes": 84
+      },
+      "distribution": {
+        "medianMs": 42.54429999999775,
+        "maxMs": 43.84890000000087,
+        "responseBytes": 2126
+      },
+      "trends": {
+        "medianMs": 15.580500000000029,
+        "maxMs": 16.51270000000295,
+        "responseBytes": 1613
+      },
+      "doctors": {
+        "medianMs": 12.533699999999953,
+        "maxMs": 13.65139999999883,
+        "responseBytes": 2852
+      },
+      "doctorSearch": {
+        "medianMs": 10.168600000000879,
+        "maxMs": 12.461300000002666,
+        "responseBytes": 396
+      },
+      "patients": {
+        "medianMs": 12.798699999999371,
+        "maxMs": 13.787100000001374,
+        "responseBytes": 4183
+      },
+      "patientFilter": {
+        "medianMs": 12.269100000001345,
+        "maxMs": 13.930100000001403,
+        "responseBytes": 4179
+      },
+      "deepPatients": {
+        "medianMs": 12.97320000000036,
+        "maxMs": 13.658299999999144,
+        "responseBytes": 4184
+      }
+    },
+    "accessibility": {
+      "dashboard": [],
+      "patients": [],
+      "patientEdit": []
+    },
+    "pickerRetainsKeyboardFocus": true,
+    "queries": {
+      "doctorNewest": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10,
+        "indexes": ["createdAt_-1__id_-1"]
+      },
+      "doctorCombinedFilter": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10,
+        "indexes": ["specializationKey_1_hospitalKey_1_createdAt_-1__id_-1"]
+      },
+      "doctorPrefix": {
+        "keysExamined": 2,
+        "documentsExamined": 1,
+        "returned": 1,
+        "indexes": ["searchTokens_1"]
+      },
+      "patientNewest": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10,
+        "indexes": ["createdAt_-1__id_-1"]
+      },
+      "patientDoctorCondition": {
+        "keysExamined": 10,
+        "documentsExamined": 10,
+        "returned": 10,
+        "indexes": ["doctorId_1_conditionKey_1_createdAt_-1__id_-1"]
+      },
+      "patientPrefix": {
+        "keysExamined": 2,
+        "documentsExamined": 1,
+        "returned": 1,
+        "indexes": ["searchTokens_1"]
+      },
+      "patientDeepOffset": {
+        "keysExamined": 3000,
+        "documentsExamined": 10,
+        "returned": 10,
+        "indexes": ["createdAt_-1__id_-1"]
+      }
+    },
+    "indexes": {
+      "doctors": [
+        {
+          "_id": 1
+        },
+        {
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "nameKey": 1,
+          "_id": 1
+        },
+        {
+          "specializationKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "hospitalKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "specializationKey": 1,
+          "hospitalKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "searchTokens": 1
+        }
+      ],
+      "patients": [
+        {
+          "_id": 1
+        },
+        {
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "nameKey": 1,
+          "_id": 1
+        },
+        {
+          "doctorId": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "conditionKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "doctorId": 1,
+          "conditionKey": 1,
+          "createdAt": -1,
+          "_id": -1
+        },
+        {
+          "searchTokens": 1
+        }
+      ]
+    }
+  }
+}
