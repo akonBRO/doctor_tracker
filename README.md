@@ -186,6 +186,8 @@ See the [Stage 5 quality audit](docs/STAGE5_QUALITY_AUDIT.md) for page review, r
 
 Production startup verifies indexes without creating them, requires safe TLS/origin/process configuration and checks web build/runtime rewrite compatibility. The API exposes readiness/liveness paths, drains active requests before shutdown, bounds HTTP/pool waits and logs sanitized connection/lifecycle events. Production API start consumes injected environment and requires production mode; it does not require a local env file.
 
+Plain `npm run typecheck` uses a development-only route-type generation child, so unchanged local HTTP settings need no deployment configuration for typing. Production build/start still enforce the release validation rules.
+
 The [Stage 6 evidence](docs/STAGE6_DEPLOYMENT_READINESS.md) explains the implemented safeguards and isolated HTTPS/MongoDB TLS/restore rehearsal. Use the [approval gate](docs/DEPLOYMENT_READINESS.md) and [production runbook](docs/PRODUCTION_DEPLOYMENT_RUNBOOK.md) for host/domain/TLS/secrets/backup decisions and explicit release approval. Push/CI never deploys this application. Existing Atlas data and environment files remain untouched.
 
 ## Scripts and verification
