@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { WorkspaceFoundation } from '../../../components/workspace-foundation';
-export const metadata: Metadata = { title: 'Overview' };
+import { Dashboard } from '../../../features/dashboard/dashboard';
+export const metadata: Metadata = { title: 'Dashboard' };
 export default function Page() {
-  return <WorkspaceFoundation area="dashboard" />;
+  return <Dashboard />;
 }

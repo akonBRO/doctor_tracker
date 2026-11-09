@@ -620,54 +620,7 @@ textarea:focus-visible {
 .page-heading > p:last-child {
   color: var(--muted);
 }
-.dashboard-page {
-  max-width: 1060px;
-}
-.dashboard-links {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 36px;
-}
-.dashboard-links section {
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 30px;
-}
-.dashboard-section-icon {
-  color: var(--accent);
-  margin-bottom: 24px;
-}
-.dashboard-links p {
-  font-size: 16px;
-  color: var(--muted);
-  margin-top: 10px;
-  min-height: 52px;
-}
-.dashboard-open {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--accent-hover);
-  font-weight: 650;
-  padding-block: 20px;
-}
-.dashboard-open:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.dashboard-add {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-top: 1px solid var(--line);
-  padding-top: 20px;
-  font-size: 15px;
-}
-.dashboard-add:hover {
-  color: var(--accent-hover);
-}
+
 .sidebar-close {
   display: none;
 }
@@ -688,9 +641,6 @@ textarea:focus-visible {
   }
   .admin-page {
     padding: 32px 24px 48px;
-  }
-  .dashboard-links section {
-    padding: 24px;
   }
 }
 @media (max-width: 767px) {
@@ -779,20 +729,6 @@ textarea:focus-visible {
   }
   .admin-page {
     padding: 28px 20px 48px;
-  }
-  .dashboard-links {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-top: 28px;
-  }
-  .dashboard-links section {
-    padding: 24px;
-  }
-  .dashboard-links p {
-    min-height: 0;
-  }
-  .dashboard-section-icon {
-    margin-bottom: 16px;
   }
 }
 @media (max-width: 360px) {

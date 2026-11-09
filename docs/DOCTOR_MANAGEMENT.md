@@ -130,4 +130,4 @@ Doctor details now query real paginated Patient records using the validated pare
 
 See [PATIENT_MANAGEMENT.md](PATIENT_MANAGEMENT.md) for exact routes, schema, immutable assignments, deletion semantics, query budgets and security. The Stage 3 redesign restyles all Doctor pages and replaces the prior unavailable patient placeholder. The symbol geometry and Stage 2 URL/filter/form behavior remain.
 
-Doctor editing/deletion and analytics are outside this stage. Administrators share one workspace; future tenancy must scope both Doctor and Patient queries consistently. Atlas connectivity is verified read-only; deployment, HTTPS/proxy operational checks and multi-instance shared rate stores remain future work.
+Doctor editing/deletion remain outside this stage. Stage 4 adds read-only [dashboard analytics](DASHBOARD_ANALYTICS.md) using these existing records/indexes. Administrators share one workspace; future tenancy must scope both Doctor and Patient queries consistently. Atlas connectivity was verified read-only during Stage 3; deployment, HTTPS/proxy operational checks and multi-instance shared rate stores remain future work.

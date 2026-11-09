@@ -39,7 +39,10 @@ async function send<T>(
       response.status === 401 &&
       allowRefresh &&
       method === 'GET' &&
-      (path === '/auth/me' || path.startsWith('/doctors') || path.startsWith('/patients'))
+      (path === '/auth/me' ||
+        path.startsWith('/doctors') ||
+        path.startsWith('/patients') ||
+        path.startsWith('/dashboard/'))
     ) {
       const rotate = async () => {
         await send('/auth/refresh', 'POST', {}, false);
@@ -65,6 +68,12 @@ async function send<T>(
       );
     }
     if (path === '/auth/logout') csrf = undefined;
+    if (
+      method !== 'GET' &&
+      /^\/(?:doctors|patients)(?:\/|$)/.test(path) &&
+      typeof window !== 'undefined'
+    )
+      window.dispatchEvent(new Event('doctor-tracker-records-changed'));
     return payload.data;
   } catch (error) {
     if (signal?.aborted) throw error;

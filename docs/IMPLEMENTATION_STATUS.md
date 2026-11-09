@@ -1,6 +1,30 @@
 # Implementation status
 
-## Stage 3 correction - light UI and Bangladesh patient records
+## Stage 4 — admin dashboard and analytics
+
+The dashboard now reads exact Doctor/Patient totals, current assignments per doctor and bounded 7/30/90-day registration trends from secure Express/MongoDB endpoints. Totals remain all-time. Registration buckets use inclusive UTC calendar days including today, with an exclusive next-midnight upper bound; chart labels explicitly say UTC. The update time uses Bangladesh time. Deleted patients leave all metrics, including their historical creation bucket.
+
+The corrected light UI is retained: two totals, a Recharts registration chart with a daily-count table, and paginated horizontal patient-count bars with actual doctor links. Zero-patient doctors remain included. Full names wrap, each subset is labeled, and bar scales remain constant across pages. There are no fabricated metrics or unrelated analytics sections.
+
+Endpoints are `GET /api/v1/dashboard/overview`, `GET /api/v1/dashboard/patients-by-doctor`, and `GET /api/v1/dashboard/trends`. Verified admin/MFA/session guards, strict query schemas, a per-admin read budget and no-store responses protect every endpoint. Only counts, dates and necessary doctor IDs/names are projected. Exact counts use `_id_`; dates use the existing creation-date indexes; assignment count lookups use the existing Patient `doctorId` index prefix. No indexes, migrations, Atlas mutations or environment edits are required.
+
+Data loads concurrently using the existing client/query hook, with runtime response validation, cancellation, independent retries, safe session refresh and bounded visible-tab revalidation. Period changes do not change totals. Record changes invalidate mounted dashboards, and re-entry/manual refresh fetch current data. No server/browser persistent cache, WebSockets or per-second polling is added.
+
+### Stage 4 verification
+
+- `npm test`: **204 passing integration/security tests** in four suites: authentication (24), doctors (56), patients (92) and dashboard analytics (32). The final focused dashboard rerun also passed all 32 cases after the lint-only helper correction.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` and the production `npm run build` passed. The build used isolated test origins on 3100/4100, without editing environment files.
+- `npm run test:e2e`: **15 production browser checks passed**, covering the original auth/CRUD suite and the new dashboard suite at 1440, 1024, 768, 375 and 320px. Successful operations use actual APIs/database writes; only deliberate failures/latency are intercepted.
+- After final empty-state spacing and response-validation refinements, the dashboard suite passed **all five production rechecks**. It also passed **three development/React Strict Mode checks** at 1440, 375 and 320px. The full prior-stage development CRUD suite was not repeated in Stage 4.
+- **15 new production dashboard captures** show populated, empty and unavailable-total states at every required width. These were visually reviewed alongside native-width chart/doctor-label layouts. Existing auth/CRUD captures were refreshed by the regression suite. Keyboard chart navigation, the daily table, all periods, URL restoration, loading, retries, invalid/absent data envelopes, expired sessions and unwanted horizontal overflow were checked.
+- The 200-doctor/4,000-patient disposable fixture verified indexed date aggregation and indexed assignment lookups without fetching patient documents. Query-plan observations and trade-offs are documented in [Dashboard Analytics](DASHBOARD_ANALYTICS.md); no production benchmark or improvement claim is made.
+- Full and production-only dependency audits reported **0 vulnerabilities**. The new runtime chart dependency is Recharts 3.10.1 with its React-is peer; no CSS framework or state-management library was added for application state.
+
+Review fixes included the period selector's size/style, retaining the open daily table across period changes, preserving chart/table focus during background refresh, and treating missing response envelopes as errors. The test runner now isolates each viewport/workflow in its own actual server/database fixture after combined rapid automation reached the existing global rate budget. Application security limits were retained. A lint issue in the new test helper was corrected; unsuccessful exploratory runs are not counted above.
+
+See [Dashboard Analytics](DASHBOARD_ANALYTICS.md) for metric definitions, response contracts, query strategies, fixture observations, screenshots, freshness and limits. Independent datasets are not one transactional snapshot; exact global ranking/counting still scales with the stored population. There is no deleted-event ledger, and future tenancy must scope every aggregation. Stage 5 workload optimization and Stage 6 deployment remain deferred.
+
+## Stage 3 correction - light UI and Bangladesh patient records (previous delivery)
 
 Implemented 8-9 November 2026. This is the Stage 3 correction, not Stage 4. No analytics, deployment, appointments, billing or prescribing workflow is included.
 

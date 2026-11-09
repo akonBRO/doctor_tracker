@@ -11,6 +11,7 @@ import type { Config } from './config/env.js';
 import { AuthService } from './services/auth.js';
 import { doctorRoutes } from './routes/doctors.js';
 import { patientRoutes } from './routes/patients.js';
+import { dashboardRoutes } from './routes/dashboard.js';
 import { AppError } from './utils/errors.js';
 import { hashPassword, hashToken, randomToken } from './utils/security.js';
 import {
@@ -171,6 +172,7 @@ export async function createApp(config: Config) {
     res.json({ data: { admin: await auth.authenticate(req) } });
   });
   app.use('/api/v1/auth', router);
+  app.use('/api/v1/dashboard', dashboardRoutes(auth));
   app.use('/api/v1', patientRoutes(auth));
   app.use('/api/v1/doctors', doctorRoutes(auth));
   app.use((_req, _res, next) =>

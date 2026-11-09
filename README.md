@@ -1,6 +1,6 @@
 # Doctor Tracker
 
-Doctor Tracker implements **Stages 1-3**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, and a light hospital administration interface with Bangladesh-oriented patient registration. Search, combined filters, pagination, doctor assignments, editing and permanent deletion use the independent Express API and MongoDB. Analytics are reserved for Stage 4.
+Doctor Tracker implements **Stages 1-4**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, Bangladesh-oriented registration, and a database-driven admin analytics dashboard. Search, combined filters, pagination, doctor assignments, editing, permanent deletion and analytics use the independent Express API and MongoDB.
 
 Public source: **[akonBRO/doctor_tracker](https://github.com/akonBRO/doctor_tracker)**. Completed updates are committed and pushed to `origin` as requested by the owner. No deployment has been performed.
 
@@ -91,7 +91,7 @@ apps/api · standalone Express · localhost:4000
   │ validation → origin/CSRF/rate checks → auth services
   ▼
 MongoDB Atlas or replica set
-  Admin · Invitation · Challenge · Session
+  Admin · Invitation · Challenge · Session · Doctor · Patient
 ```
 
 The frontend has no REST Route Handlers, Server Actions, database connection, signing keys, or sensitive authentication logic. Next.js handles rendering, navigation, headers, and the HTTP rewrite; Express owns all authentication and authorization. The API can run independently with an explicitly permitted frontend origin, although the supported browser deployment uses the same-origin proxy for host-only cookies.
@@ -102,16 +102,16 @@ apps/
     config/       Environment validation and MongoDB lifecycle
     cli/          Trusted invitation provisioning
     middleware/   CSRF, cookie policy, unsafe-input rejection
-    models/       Authentication schemas and indexes
-    services/     Password, invitation, MFA and session operations
+    models/       Authentication, Doctor and Patient schemas/indexes
+    services/     Authentication, record management and analytics
     tests/        Real database integration and security tests
     utils/        Cryptography, errors, privacy-conscious logging
     app.ts        REST endpoints, limits, HTTP security, error envelope
     server.ts     Independent HTTP startup and graceful shutdown
   web/src/
     app/          Public, auth, and protected route groups
-    components/   Brand, navigation, application shell, reserved stage areas
-    features/     Integrated login, signup, MFA and recovery flows
+    components/   Brand, navigation and application shell
+    features/     Auth/MFA, Doctor/Patient management and dashboard
     lib/          Typed cookie-authenticated REST client
     styles/       Shared design tokens and responsive CSS
     proxy.ts      Per-request nonce CSP
@@ -162,6 +162,16 @@ The Stage 3 correction replaces the rejected composition with white navigation, 
 
 See [Patient Management](docs/PATIENT_MANAGEMENT.md) for endpoints, schema, scopes, indexing, deletion and Stage 4 integration; [Design Redesign](docs/DESIGN_REDESIGN.md) for the brief, references and visual review.
 
+## Admin Dashboard — Stage 4
+
+`/dashboard` displays exact all-time Doctor and Patient totals, current patients per doctor (including zero-patient doctors), and daily registration trends for the last 7, 30 or 90 UTC calendar days. Doctor names link to their real profiles. The distribution is explicitly paginated rather than presenting a top subset as every doctor. Deleted patients leave the totals, assignment counts and creation-date trends because there is no deleted-event ledger.
+
+Three protected GET endpoints provide the data: `/api/v1/dashboard/overview`, `/api/v1/dashboard/patients-by-doctor`, and `/api/v1/dashboard/trends`. Express performs indexed counts/aggregation; only compact counts, date buckets and necessary doctor ID/name labels reach the browser. Patient personal/clinical fields are excluded. Existing authentication, MFA, sessions and shared-workspace authorization apply to every endpoint.
+
+The light dashboard combines a two-value summary strip, a Recharts line chart with keyboard support and a daily-count table, and an accessible list with horizontal distribution bars. Period changes affect trends only. Reads cancel obsolete requests, retry independently and refresh on entry, explicit refresh, record changes and bounded visible-tab revalidation. No WebSockets, per-second polling or persistent analytics cache is added.
+
+See [Dashboard Analytics](docs/DASHBOARD_ANALYTICS.md) for contracts, UTC/Bangladesh date semantics, query/index evidence, freshness, security, screenshots and limitations.
+
 ## Scripts and verification
 
 | Command                               | Operation                                                              |
@@ -190,7 +200,7 @@ npm run build
 npm run test:e2e
 ```
 
-On Linux CI, use `npx playwright install --with-deps chromium`. Browser tests use dedicated 127.0.0.1 ports 3100 (web) and 4100 (API), reject occupied ports, verify their own API fixture identity and leave normal development on 3000/4000 running. Run the above environment commands in a separate test terminal; rebuild with normal origins before a regular production start. The browser runner starts each viewport with its own actual API/web processes and fresh isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 1024, 768, 375, and 320 pixels, then tears down its servers. This keeps the actual MFA/IP limits intact across five independent full workflows. Test identities are disposable; they are never seeded into your configured database.
+On Linux CI, use `npx playwright install --with-deps chromium`. Browser tests use dedicated 127.0.0.1 ports 3100 (web) and 4100 (API), reject occupied ports, verify their own API fixture identity and leave normal development on 3000/4000 running. Run the above environment commands in a separate test terminal; rebuild with normal origins before a regular production start. The browser runner starts each viewport/workflow with its own actual API/web processes and fresh isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 1024, 768, 375, and 320 pixels, then tears down its servers. This keeps the actual MFA/IP limits intact across independent auth/CRUD and dashboard workflows at all five widths. Test identities are disposable; they are never seeded into your configured database.
 
 Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode, using an ignored separate `.next-e2e` build directory. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. See the implementation status for the latest production and development verification results.
 
@@ -209,6 +219,7 @@ Screenshots are generated from actual production-browser tests. All identities a
 
 | Desktop                                                                                            | Mobile                                                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| ![Actual dashboard analytics on desktop](docs/screenshots/dashboard-desktop.png)                   | ![Actual dashboard analytics on mobile](docs/screenshots/dashboard-mobile.png)                   |
 | ![Doctor Tracker landing page at 1440 pixels](docs/screenshots/landing-desktop.png)                | ![Doctor Tracker landing page at 375 pixels](docs/screenshots/landing-mobile.png)                |
 | ![Protected workspace on desktop](docs/screenshots/workspace-desktop.png)                          | ![Protected workspace on mobile](docs/screenshots/workspace-mobile.png)                          |
 | ![Doctor directory with disposable API-created test records](docs/screenshots/doctors-desktop.png) | ![Stacked doctor directory records on mobile](docs/screenshots/doctors-mobile.png)               |
@@ -219,6 +230,6 @@ Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creati
 
 ## Current boundaries
 
-Stages 1-3 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, and patient creation/listing/details/editing/permanent deletion under validated doctors. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions, billing and reporting are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
+Stages 1-4 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, and aggregate dashboard reporting. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
 
-Stage 4 analytics, Stage 5 workload refinements and Stage 6 deployment remain future work. Atlas connectivity was verified without changing records; no deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.
+Stage 5 workload refinements and Stage 6 deployment remain future work. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stage 4 uses disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

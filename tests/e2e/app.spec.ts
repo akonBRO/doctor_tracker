@@ -102,6 +102,11 @@ test('real invitation, MFA enrollment, restored session, shell navigation, and l
   await page.getByRole('button', { name: 'Enter your workspace' }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+  await expect(page.getByRole('link', { name: '0 total doctors', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No doctors registered' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'No registrations in this period' }),
+  ).toBeVisible();
   await capturePage(page, testInfo.project.name, 'workspace');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await checkAccessibility(page);

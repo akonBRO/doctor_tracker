@@ -3,11 +3,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '../../lib/api';
 
-export function useDoctorQuery<T>(path: string | null, delay = 0) {
+export function useDoctorQuery<T>(
+  path: string | null,
+  delay = 0,
+  revision = 0,
+  retainOnRefresh = false,
+) {
   const router = useRouter();
   const [attempt, setAttempt] = useState(0);
-  const key = `${path}:${attempt}`;
-  const [result, setResult] = useState<{ key: string; data?: T; error?: ApiError }>();
+  const key = `${path}:${attempt}:${revision}`;
+  const [result, setResult] = useState<{ key: string; path: string; data?: T; error?: ApiError }>();
   useEffect(() => {
     if (!path) return;
     const controller = new AbortController();
@@ -16,7 +21,7 @@ export function useDoctorQuery<T>(path: string | null, delay = 0) {
       api
         .get<T>(path, { signal: controller.signal })
         .then((data) => {
-          if (active) setResult({ key, data });
+          if (active) setResult({ key, path, data });
         })
         .catch((error) => {
           if (!active || controller.signal.aborted) return;
@@ -26,6 +31,7 @@ export function useDoctorQuery<T>(path: string | null, delay = 0) {
           }
           setResult({
             key,
+            path,
             error:
               error instanceof ApiError
                 ? error
@@ -44,7 +50,8 @@ export function useDoctorQuery<T>(path: string | null, delay = 0) {
     };
   }, [path, key, delay, router]);
   return {
-    data: result?.key === key ? result.data : undefined,
+    data:
+      result?.key === key || (retainOnRefresh && result?.path === path) ? result?.data : undefined,
     error: result?.key === key ? result.error : undefined,
     loading: !!path && result?.key !== key,
     retry: () => setAttempt((value) => value + 1),

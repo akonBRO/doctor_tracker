@@ -2,6 +2,8 @@
 
 The owner rejected the previous rust actions, graphite sidebar, repetitive headings and lightly restyled administrative pages. The correction changes composition and task hierarchy as well as color. The existing Next.js/Express architecture, authentication, doctor routes, patient relationships and original logo geometry remain.
 
+This records the Stage 3 correction. The dashboard task links described below have since been replaced by the Stage 4 [analytics dashboard](DASHBOARD_ANALYTICS.md), using the same light palette and typography. Current screenshot captures reflect that later dashboard implementation.
+
 ## Audit and direction
 
 The rejected Stage 3 screenshots are preserved in `screenshots/before-correction/`: [landing](screenshots/before-correction/landing-desktop.png), [login](screenshots/before-correction/login-desktop.png), [dashboard](screenshots/before-correction/workspace-desktop.png), [doctor directory](screenshots/before-correction/doctors-desktop.png), [doctor profile](screenshots/before-correction/doctor-detail-desktop.png), [patient creation](screenshots/before-correction/patient-create-desktop.png), [mobile doctors](screenshots/before-correction/doctors-mobile.png), and [mobile patient form](screenshots/before-correction/patient-create-mobile.png). The older `screenshots/before/` folder is the Stage 2 baseline, not the correction baseline.

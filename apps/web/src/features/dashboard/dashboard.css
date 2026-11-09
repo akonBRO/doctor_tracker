@@ -1,0 +1,331 @@
+.analytics-dashboard {
+  max-width: 1280px;
+}
+.analytics-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.analytics-totals {
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+  margin-bottom: 32px;
+  min-height: 126px;
+}
+.analytics-totals dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+  padding-block: 22px;
+}
+.analytics-totals dl > div {
+  padding-inline: 28px;
+}
+.analytics-totals dl > div + div {
+  border-left: 1px solid var(--line);
+}
+.analytics-totals dt {
+  color: var(--muted);
+  font-size: 15px;
+}
+.analytics-totals dd {
+  margin: 2px 0 0;
+  font: 650 36px/1.3 var(--font-heading);
+  font-variant-numeric: tabular-nums;
+}
+.analytics-totals dd a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.analytics-totals dd a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+.analytics-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.analytics-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 0;
+}
+.analytics-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 46px;
+}
+.analytics-section-heading h2 {
+  font-size: 21px;
+  letter-spacing: -0.025em;
+}
+.analytics-period {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.analytics-period label {
+  font-size: 14px;
+  color: var(--muted);
+}
+.analytics-period select {
+  min-height: 46px;
+  border: 1px solid var(--control-line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  width: auto;
+  font-size: 15px;
+  padding: 10px;
+  min-width: 144px;
+}
+.analytics-range,
+.distribution-caption,
+.analytics-footnote,
+.analytics-updated {
+  color: var(--muted);
+  font-size: 14px;
+}
+.analytics-range {
+  margin-top: 12px;
+}
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 0;
+  list-style: none;
+  margin: 24px 0 8px;
+  font-size: 14px;
+}
+.analytics-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.analytics-legend strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.analytics-legend li > span {
+  width: 20px;
+  border-top: 3px solid #1979b3;
+}
+.analytics-legend li > .series-patients {
+  border-color: #277969;
+  border-top-style: dashed;
+}
+.registration-chart {
+  width: 100%;
+  height: 270px;
+  min-width: 0;
+}
+.registration-chart .recharts-wrapper {
+  font-family: var(--font-body);
+}
+.registration-chart .recharts-surface:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.daily-counts {
+  margin-top: 18px;
+  font-size: 15px;
+}
+.daily-counts summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--accent-hover);
+  padding-block: 8px;
+}
+.daily-counts-table {
+  overflow: auto;
+  max-height: 330px;
+  margin-top: 10px;
+}
+.daily-counts table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.daily-counts th,
+.daily-counts td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.daily-counts th:first-child {
+  text-align: left;
+}
+.daily-counts thead th {
+  color: var(--ink);
+  background: var(--soft-blue);
+  position: sticky;
+  top: 0;
+}
+.daily-counts tbody th {
+  font-weight: 400;
+  white-space: nowrap;
+}
+.analytics-footnote {
+  margin-top: 14px;
+}
+.distribution-caption {
+  margin-top: 20px;
+}
+.doctor-distribution {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 24px;
+}
+.doctor-distribution li {
+  padding-block: 15px;
+}
+.doctor-bar-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 15px;
+}
+.doctor-bar-label a {
+  color: var(--accent-hover);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.doctor-bar-label > span {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.doctor-bar-track {
+  height: 7px;
+  background: var(--soft-blue);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+.doctor-bar-track > div {
+  background: var(--accent);
+  height: 100%;
+  border-radius: 2px;
+}
+.distribution-pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+.distribution-pages button {
+  font-size: 14px;
+  padding-inline: 10px;
+}
+.distribution-pages > span {
+  font-size: 14px;
+  text-align: center;
+  color: var(--muted);
+}
+.analytics-state {
+  padding-block: 28px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.analytics-totals > .analytics-state {
+  padding-inline: 28px;
+}
+.analytics-error p {
+  color: var(--danger);
+  margin-bottom: 16px;
+}
+.analytics-empty,
+.analytics-chart-empty {
+  padding-block: 42px;
+}
+.analytics-empty h3,
+.analytics-chart-empty h3 {
+  font-size: 18px;
+}
+.analytics-empty p,
+.analytics-chart-empty p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.analytics-empty button {
+  margin-top: 18px;
+}
+.analytics-chart-empty {
+  min-height: 160px;
+  padding-block: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.analytics-updated {
+  margin-top: 24px;
+}
+@media (max-width: 1150px) {
+  .analytics-columns {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .analytics-page-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .analytics-page-heading h1 {
+    font-size: 28px;
+  }
+  .analytics-page-heading button {
+    font-size: 14px;
+    padding-inline: 12px;
+  }
+  .analytics-panel {
+    padding: 20px 16px;
+  }
+  .analytics-totals dl > div {
+    padding-inline: 16px;
+  }
+  .analytics-totals dd {
+    font-size: 32px;
+  }
+  .analytics-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .analytics-period {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .analytics-period select {
+    width: 160px;
+  }
+  .analytics-range {
+    margin-top: 16px;
+  }
+  .analytics-legend {
+    gap: 12px 18px;
+  }
+  .registration-chart {
+    height: 250px;
+  }
+  .analytics-totals {
+    margin-bottom: 24px;
+  }
+  .daily-counts th,
+  .daily-counts td {
+    padding-inline: 4px;
+  }
+}

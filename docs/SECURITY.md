@@ -2,6 +2,16 @@
 
 This is an application foundation, not a claim of regulatory compliance or a penetration-test certification. Do not store real patient information until the applicable record security, operating controls, backups, and deployment review are complete.
 
+## Stage 4 analytics controls
+
+Every analytics endpoint uses the existing verified administrator/MFA/database-session guard, plus service-level role checks. The authorization scope remains the shared admin workspace; query parameters cannot supply tenant/resource scopes or arbitrary aggregate stages. Strict schemas bound periods to 7/30/90 days and distribution pages to at most 20 doctors. Unsupported query keys, operators, repeated parameters, arbitrary sort fields and identifiers are rejected.
+
+Analytics uses read-only GET routes, no-store responses and a 60-request/minute per-admin budget alongside the existing global rate limit. Safe reads reuse the existing single-flight session rotation; mutations retain CSRF, exact Origin and no automatic replay. Existing restricted CORS, nonce CSP, secure-cookie configuration, hashing, MFA and environment secrets remain.
+
+Responses project only aggregate counts/date buckets and necessary doctor ID/name labels. Patient identities, phones, addresses, conditions, medical text and emergency details are absent from DTOs/logs. Joins count inside MongoDB rather than returning Patient arrays. Three-second query limits, bounded output and sanitized retriable errors contain failures without leaking raw database messages. Runtime frontend schemas reject malformed/negative chart data, and dynamic labels render as escaped text.
+
+No persistent analytics cache or browser token storage is added. Hidden tabs do not poll. Query-plan and browser tests use disposable replica sets with fictional fixtures; Atlas data/configuration are untouched. External operators must preserve doctor references; deleted records are not retained as event history. See [Dashboard Analytics](DASHBOARD_ANALYTICS.md) for exact definitions, performance limits and verification. This stage performs no deployment or production-load experiment.
+
 ## Stage 3 patient controls and correction
 
 Patient create/read/edit/delete require the same verified administrator, completed MFA and active database session. Services enforce role checks; nested queries validate the existing doctor and bind deletion to both IDs. Assignments are immutable and strict bodies reject IDs, timestamps, roles and other properties. Global/nested filters are bounded, literal prefix regexes are escaped, MongoDB/prototype keys are rejected, and all record text is escaped by React under the retained nonce CSP.
