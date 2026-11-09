@@ -25,8 +25,9 @@ import {
 } from './middleware/security.js';
 import { Challenge } from './models/auth.js';
 import { logger } from './utils/logger.js';
+import type { RuntimeState } from './runtime.js';
 
-export async function createApp(config: Config) {
+export async function createApp(config: Config, state: RuntimeState = { draining: false }) {
   const app = express();
   const auth = new AuthService(config, await hashPassword(randomToken()));
   app.disable('x-powered-by');
@@ -88,12 +89,21 @@ export async function createApp(config: Config) {
     (patientWrite ? patientJson : ordinaryJson)(req, res, next);
   }, cookieParser());
   app.use(csrfProtection(config), rejectUnsafeInput);
-  app.get('/api/v1/health', rejectQueryParameters, (_req, res) =>
-    res
-      .status(mongoose.connection.readyState === 1 ? 200 : 503)
-      .json({ data: { status: mongoose.connection.readyState === 1 ? 'ok' : 'unavailable' } }),
+  app.get('/api/v1/health/live', rejectQueryParameters, (_req, res) =>
+    res.json({ data: { status: 'ok' } }),
+  );
+  app.get(['/api/v1/health', '/api/v1/health/ready'], rejectQueryParameters, (_req, res) =>
+    res.status(mongoose.connection.readyState === 1 && !state.draining ? 200 : 503).json({
+      data: {
+        status: mongoose.connection.readyState === 1 && !state.draining ? 'ok' : 'unavailable',
+      },
+    }),
   );
   app.use('/api/v1', (req, _res, next) => {
+    if (state.draining)
+      return next(
+        new AppError(503, 'SERVICE_DRAINING', 'The service is restarting. Please try again.'),
+      );
     // CSRF issuance is stateless; readiness above remains available during outages.
     if (req.method === 'GET' && req.path === '/auth/csrf') return next();
     if (mongoose.connection.readyState !== 1)

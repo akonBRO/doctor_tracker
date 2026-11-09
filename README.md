@@ -1,6 +1,6 @@
 # Doctor Tracker
 
-Doctor Tracker implements **Stages 1-4**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, Bangladesh-oriented registration, and a database-driven admin analytics dashboard. Search, combined filters, pagination, doctor assignments, editing, permanent deletion and analytics use the independent Express API and MongoDB.
+Doctor Tracker provides invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, Bangladesh-oriented registration, and a database-driven admin analytics dashboard. Search, combined filters, pagination, doctor assignments, editing, permanent deletion and analytics use the independent Express API and MongoDB.
 
 Public source: **[akonBRO/doctor_tracker](https://github.com/akonBRO/doctor_tracker)**. Completed updates are committed and pushed to `origin` as requested by the owner. No deployment has been performed.
 
@@ -54,20 +54,22 @@ The invitation token is in a URL fragment and removed from the address bar on lo
 
 ### Environment configuration
 
-| Application | Variable               | Purpose                                                                          |
-| ----------- | ---------------------- | -------------------------------------------------------------------------------- |
-| API         | `NODE_ENV`, `PORT`     | Development/test/production mode and independent API port                        |
-| API         | `WEB_ORIGIN`           | Exact approved frontend origin; no trailing slash                                |
-| API         | `MONGODB_URI`          | Atlas or replica-set connection string; server-only secret                       |
-| API         | `JWT_SECRET`           | Independent 32-byte random key, encoded as 64 hex characters                     |
-| API         | `MFA_ENCRYPTION_KEY`   | Independent 32-byte AES-GCM key, 64 hex characters                               |
-| API         | `CSRF_SECRET`          | Independent 32-byte HMAC key, 64 hex characters                                  |
-| API         | `ACCESS_TOKEN_MINUTES` | JWT lifetime, default 5 minutes, maximum 15                                      |
-| API         | `REFRESH_TOKEN_DAYS`   | Absolute refresh-family lifetime, default 7 days                                 |
-| API         | `COOKIE_SECURE`        | `false` for local HTTP; **must be `true` in production**                         |
-| API         | `TRUST_PROXY_HOPS`     | Exact count of trusted proxies, default 0; never blindly trust forwarded headers |
-| Web         | `API_ORIGIN`           | Server-only Express origin used by rewrites and server identity checks           |
-| Web         | `APP_ORIGIN`           | Public frontend origin; HTTPS enables HSTS and CSP upgrade policy                |
+| Application | Variable                     | Purpose                                                                          |
+| ----------- | ---------------------------- | -------------------------------------------------------------------------------- |
+| API         | `NODE_ENV`, `PORT`           | Development/test/production mode and independent API port                        |
+| API         | `HOST`, `API_INSTANCE_COUNT` | Loopback by default; production requires one explicitly declared API process     |
+| API         | `WEB_ORIGIN`                 | Exact approved frontend origin; no trailing slash                                |
+| API         | `MONGODB_URI`                | Atlas or replica-set connection string; server-only secret                       |
+| API         | `JWT_SECRET`                 | Independent 32-byte random key, encoded as 64 hex characters                     |
+| API         | `MFA_ENCRYPTION_KEY`         | Independent 32-byte AES-GCM key, 64 hex characters                               |
+| API         | `CSRF_SECRET`                | Independent 32-byte HMAC key, 64 hex characters                                  |
+| API         | `ACCESS_TOKEN_MINUTES`       | JWT lifetime, default 5 minutes, maximum 15                                      |
+| API         | `REFRESH_TOKEN_DAYS`         | Absolute refresh-family lifetime, default 7 days                                 |
+| API         | `COOKIE_SECURE`              | `false` for local HTTP; **must be `true` in production**                         |
+| API         | `TRUST_PROXY_HOPS`           | Exact count of trusted proxies, default 0; never blindly trust forwarded headers |
+| Web         | `API_ORIGIN`                 | Server-only Express origin used by rewrites and server identity checks           |
+| Web         | `APP_ORIGIN`                 | Public frontend origin; HTTPS enables HSTS and CSP upgrade policy                |
+| Web         | `WEB_ALLOW_LOCAL_HTTP`       | Loopback-only production test opt-in; omit for deployment                        |
 
 For production set both frontend origins to the same HTTPS origin and configure Secure cookies. Build the web app with the production `API_ORIGIN`: Next.js includes rewrite destinations in the build. No auth secrets use `NEXT_PUBLIC_` variables. Independently generate each key:
 
@@ -180,23 +182,30 @@ The empty dashboard conditionally loads its chart: local cold-context JS transfe
 
 See the [Stage 5 quality audit](docs/STAGE5_QUALITY_AUDIT.md) for page review, reproducible 200-doctor/4,000-patient measurements, all 20 security controls, accessibility and explicit limits. [Deployment Readiness](docs/DEPLOYMENT_READINESS.md) defines Stage 6 requirements. No deployment was performed and no persistent Atlas data or environment file was changed.
 
+## Operational readiness - Stage 6
+
+Production startup verifies indexes without creating them, requires safe TLS/origin/process configuration and checks web build/runtime rewrite compatibility. The API exposes readiness/liveness paths, drains active requests before shutdown, bounds HTTP/pool waits and logs sanitized connection/lifecycle events. Production API start consumes injected environment and requires production mode; it does not require a local env file.
+
+The [Stage 6 evidence](docs/STAGE6_DEPLOYMENT_READINESS.md) explains the implemented safeguards and isolated HTTPS/MongoDB TLS/restore rehearsal. Use the [approval gate](docs/DEPLOYMENT_READINESS.md) and [production runbook](docs/PRODUCTION_DEPLOYMENT_RUNBOOK.md) for host/domain/TLS/secrets/backup decisions and explicit release approval. Push/CI never deploys this application. Existing Atlas data and environment files remain untouched.
+
 ## Scripts and verification
 
-| Command                                                                 | Operation                                                                    |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `npm run dev`                                                           | Both apps, with independent processes                                        |
-| `npm run dev:web` / `npm run dev:api`                                   | Run one application                                                          |
-| `npm run dev:db`                                                        | Disposable real MongoDB replica set                                          |
-| `npm run setup:local`                                                   | Create ignored local environments and strong random keys                     |
-| `npm run invite -- email`                                               | Create a private one-time administrator invitation                           |
-| `npm run typecheck`                                                     | Strict checks for apps, shared schemas, tests and tooling                    |
-| `npm run lint`                                                          | ESLint; zero warnings permitted                                              |
-| `npm run format:check`                                                  | Check formatting                                                             |
-| `npm test`                                                              | Security/integration tests with a fresh MongoDB replica set                  |
-| `npm run build`                                                         | Shared package, Express and production Next.js builds                        |
-| `npm run test:e2e`                                                      | Isolated Chromium tests on 3100/4100; use the test build origins below       |
-| `node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop` | Additional isolated 200-doctor/4,000-patient browser/performance/focus audit |
-| `npm audit` / `npm audit --omit=dev`                                    | Full / production vulnerability audits                                       |
+| Command                                                                 | Operation                                                                       |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `npm run dev`                                                           | Both apps, with independent processes                                           |
+| `npm run dev:web` / `npm run dev:api`                                   | Run one application                                                             |
+| `npm run dev:db`                                                        | Disposable real MongoDB replica set                                             |
+| `npm run setup:local`                                                   | Create ignored local environments and strong random keys                        |
+| `npm run invite -- email`                                               | Create a private one-time administrator invitation                              |
+| `npm run typecheck`                                                     | Strict checks for apps, shared schemas, tests and tooling                       |
+| `npm run lint`                                                          | ESLint; zero warnings permitted                                                 |
+| `npm run format:check`                                                  | Check formatting                                                                |
+| `npm test`                                                              | Security/integration tests with a fresh MongoDB replica set                     |
+| `npm run build`                                                         | Shared package, Express and production Next.js builds                           |
+| `npm run test:e2e`                                                      | Isolated Chromium tests on 3100/4100; use the test build origins below          |
+| `npm run test:operations`                                               | Disposable HTTPS/TLS, compiled production startup, restore and outage rehearsal |
+| `node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop` | Additional isolated 200-doctor/4,000-patient browser/performance/focus audit    |
+| `npm audit` / `npm audit --omit=dev`                                    | Full / production vulnerability audits                                          |
 
 For browser tests, install Chromium once:
 
@@ -205,6 +214,7 @@ npx playwright install chromium
 # PowerShell test-build environment; does not edit .env files
 $env:API_ORIGIN = 'http://127.0.0.1:4100'
 $env:APP_ORIGIN = 'http://127.0.0.1:3100'
+$env:WEB_ALLOW_LOCAL_HTTP = 'true' # Explicit loopback-only production test opt-in
 npm run build
 npm run test:e2e
 ```
@@ -213,18 +223,20 @@ On Linux CI, use `npx playwright install --with-deps chromium`. Browser tests us
 
 Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode, using an ignored separate `.next-e2e` build directory. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. See the implementation status for the latest production and development verification results.
 
-For production-process smoke testing locally after a build, run these in separate terminals with your configured database running:
+For local HTTP production-process debugging after a matching local build, retain the above loopback web opt-in and use these explicit local commands in separate terminals. Actual production uses injected variables and the approved release runbook:
 
 ```sh
-npm run start -w @doctor-tracker/api
+npm run start:local -w @doctor-tracker/api
 npm run start -w @doctor-tracker/web
 ```
 
 Actual verification results and any unfinished checks are recorded in [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
 
+`npm run test:operations` requires Chromium and OpenSSL (`openssl` on PATH, Git for Windows OpenSSL, or explicit `TEST_OPENSSL`). It creates only disposable TLS/HTTPS/database fixtures, exercises the compiled production API, builds Next with a temporary HTTPS origin, verifies auth/CRUD/restore/outage behavior, and tears down owned processes. Next performs its normal web env loading with fixture origins overriding local values. Rebuild with intended origins afterward; do not ship fixture `.next` artifacts.
+
 ## Visual evidence
 
-Screenshots are generated from actual production-browser tests. All identities and patient/doctor records shown are explicitly disposable test fixtures. MFA setup keys are masked before capture. No Atlas data is used.
+The existing Stage 5 screenshots come from actual production-browser tests. Stage 6 leaves them unchanged because the UI is unchanged. Set `E2E_CAPTURE_SCREENSHOTS=true` only when intentionally regenerating images after a UI change. All identities and patient/doctor records shown are explicitly disposable test fixtures. MFA setup keys are masked before capture. No Atlas data is used.
 
 | Desktop                                                                                            | Mobile                                                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -239,6 +251,6 @@ Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creati
 
 ## Current boundaries
 
-Stages 1-5 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, aggregate dashboard reporting and measured quality refinements. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
+Stages 1-6 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, aggregate dashboard reporting and measured quality refinements plus operational release safeguards. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
 
-Stage 6 deployment remains future work. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stages 4-5 use disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.
+Production deployment still requires explicit owner approval and the documented hosting/security/backup inputs. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stages 4-6 use disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

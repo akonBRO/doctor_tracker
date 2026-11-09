@@ -2,6 +2,16 @@
 
 This is an application foundation, not a claim of regulatory compliance or a penetration-test certification. Do not store real patient information until the applicable record security, operating controls, backups, and deployment review are complete.
 
+## Stage 6 production safeguards
+
+Production startup requires explicit proxy hops and one declared API instance, verified MongoDB TLS and a named database, Secure cookies and exact HTTPS origin. Larger process counts, incompatible concurrency/PM2 settings and TLS verification bypasses fail validation. Application declarations do not detect an undisclosed second host; deployment must enforce one API instance until shared rate stores are implemented and tested. Existing global/account/MFA limits remain, including rejected-request accounting.
+
+Production database startup disables automatic collection creation and verifies required indexes without creating, syncing or dropping them. The separately approved privileged preparation CLI requires `--apply-indexes`; it is not invoked against Atlas by tests or deployment automation. No schema/index migration is needed for Stage 6. Production API start uses injected environment and requires production mode; local env-file startup is explicit.
+
+Web build/start requires explicit origins and HTTPS, rejects built API rewrite/security-header transport drift and retains server-only identity checks. Loopback HTTP production testing requires an explicit opt-in that cannot enable remote HTTP origins. Existing no-store behavior, mandatory MFA, rotation, CSRF/CORS, host-only cookies and source-map restrictions remain. Probe responses expose generic status only. Runtime shutdown drains before disconnecting, with bounded failure and sanitized lifecycle/database event logs.
+
+The isolated operational rehearsal uses actual production configuration, explicit-CA TLS, an HTTPS proxy and real browser invitation/MFA/refresh/CRUD/logout/recovery against disposable MongoDB. Restored BSON/index metadata and encrypted MFA are exercised, without any Atlas mutation. Browser trust for the temporary certificate and the local MongoDB TLS bridge are explicitly documented simulation boundaries; final public TLS/proxy/backups require manual verification. See [Stage 6 evidence](STAGE6_DEPLOYMENT_READINESS.md), [approval gate](DEPLOYMENT_READINESS.md) and [release/recovery runbook](PRODUCTION_DEPLOYMENT_RUNBOOK.md). No production deployment or live secret rotation is performed.
+
 ## Stage 5 audit and hardening
 
 The [Stage 5 quality audit](STAGE5_QUALITY_AUDIT.md#security-audit-matrix--all-20-controls) records all 20 requested controls, source/test evidence, remediation and remaining limits. This is a local code/integration/browser audit, not a penetration-test or compliance certification.
@@ -74,7 +84,7 @@ See [Doctor Management](DOCTOR_MANAGEMENT.md) for current endpoints, measured in
 1. Use a persistent, backed-up Atlas cluster or replica set with TLS and a least-privileged database account. Keep connection strings in your secret manager.
 2. Terminate HTTPS at a trusted edge and expose only the frontend origin; route `/api/v1/*` to the independent API. Do not make health/auth response data cacheable. Match `WEB_ORIGIN` and `APP_ORIGIN` exactly; set `COOKIE_SECURE=true`.
 3. If an edge proxy is present, set `TRUST_PROXY_HOPS` to the actual fixed proxy count, and have the edge overwrite untrusted forwarded headers. Keep the API unreachable through bypass paths. Never use arbitrary `trust proxy=true`.
-4. Replace each express-rate-limit memory store with its own namespaced shared Redis-backed Store (for example, rate-limit-redis), for the general, credentials, account, MFA, signup, refresh, and logout budgets. Test limits through the real edge. Do not start multiple API processes with independent in-memory limits.
+4. Enforce one API process while using memory stores. Before multiple processes, replace each express-rate-limit memory store with its own namespaced shared Store for general, credentials, account, MFA, signup, refresh and logout budgets, then test through the real edge. No shared-store service is required for ordinary local development; independent per-process memory stores are not a horizontal-scaling solution.
 5. Keep invitations and recovery codes private. Issue invitations from a trusted operator terminal with database access; never paste invitation URLs into public issues or CI logs. Reloading a signup page after fragment removal requires reopening the invitation link.
 6. Limit shell/secret-manager access because the invitation CLI is deliberately a privileged provisioning tool. No HTTP provisioning API is available.
 7. Run dependency audit, security tests, production browser tests, HTTPS cookie checks, backup/restore drills, and infrastructure access review before use with real health data.

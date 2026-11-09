@@ -133,6 +133,7 @@ export default async function setup() {
         NODE_ENV: process.env.E2E_WEB_MODE === 'development' ? 'development' : 'production',
         API_ORIGIN: apiOrigin,
         APP_ORIGIN: webOrigin,
+        WEB_ALLOW_LOCAL_HTTP: 'true',
         NEXT_TELEMETRY_DISABLED: '1',
       },
     },

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { AdminIdentity, ApiEnvelope, AuthResponse } from '@doctor-tracker/shared';
 import { AdminShell } from '../../components/admin-shell';
+import { loadWebConfig } from '../../../config/environment';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const jar = await cookies();
@@ -9,19 +10,17 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const authCookies = jar.getAll().filter((cookie) => allowedNames.includes(cookie.name));
   if (!authCookies.length) redirect('/login');
   let admin: AdminIdentity | null = null;
+  const { apiOrigin } = loadWebConfig();
   try {
-    const response = await fetch(
-      `${process.env.API_ORIGIN ?? 'http://127.0.0.1:4000'}/api/v1/auth/me`,
-      {
-        headers: {
-          cookie: authCookies
-            .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
-            .join('; '),
-        },
-        cache: 'no-store',
-        signal: AbortSignal.timeout(8000),
+    const response = await fetch(`${apiOrigin}/api/v1/auth/me`, {
+      headers: {
+        cookie: authCookies
+          .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
+          .join('; '),
       },
-    );
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
     if (response.ok) {
       const payload: ApiEnvelope<AuthResponse> = await response.json();
       admin = payload.data.admin;

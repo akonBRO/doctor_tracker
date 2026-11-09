@@ -1,5 +1,41 @@
 # Implementation status
 
+## Stage 6 — operational hardening and release preparation
+
+Implemented 9–10 November 2026 from `a623f0ae60235326c7d72f1e3d596f4796e57e8c`, initially clean and synchronized on `main`. This is repository readiness work. No application deployment, paid provisioning, DNS/hosting/GitHub-secret change, live credential rotation, Atlas seed/index/restore operation or schema migration was performed. Existing API/web environment contents are preserved and verified privately by SHA-256 comparison.
+
+### Implemented
+
+- Production API configuration requires explicit proxy hops and `API_INSTANCE_COUNT=1`, exact HTTPS origin, Secure cookies, named database and verified MongoDB TLS. Unsafe TLS, larger declared concurrency and PM2 instance configurations fail. A declared process count cannot detect an undisclosed second host; hosting must enforce the topology.
+- Production API `start` consumes injected environment and requires production mode; `start:local` explicitly retains local env-file startup. No runtime dependency was added.
+- Production startup verifies required indexes without creating/syncing/dropping them and disables automatic collection creation. A separate privileged CLI requires `--apply-indexes`; it is not automatically run against Atlas. Current schemas/index definitions are unchanged.
+- Web build/start requires explicit origins/HTTPS and rejects mismatches between runtime API origin and built rewrites, or HTTP/HTTPS security-header transport. Explicit local HTTP opt-in is restricted to loopback origins. Server identity checks use the same validated configuration.
+- API lifecycle now has dependency-aware readiness (`/health/ready`, legacy `/health`), process liveness (`/health/live`), draining state, bounded HTTP/pool behavior, coalesced shutdown, deadline/disconnect failure handling and sanitized database/lifecycle events. Existing rate budgets and uncertain-write safety remain.
+- The recommended architecture is one HTTPS browser origin through a trusted edge to private Next/Express, initially one API process. CI stays verification-only and now includes operational rehearsal and production-only audit; no automatic deployment workflow or infrastructure resource is introduced.
+- The runbook covers environment inventory, proxy/TLS, manual approval, index preparation, invitation operations, monitoring, backup ownership/RPO/RTO, isolated restoration, rollback and incidents. Documentation does not substitute for live exercises.
+
+### Verification record
+
+- `npm test`: **249 passed in eight files** (81.81s), retaining the original 214 and adding 24 API deployment/lifecycle plus 11 web configuration cases. Coverage includes malformed configuration, TLS/process policy, host-only cookie flags, proxy budgets, liveness/readiness and active-response/deadline/error shutdown behavior.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` and `npm run build` passed using explicit isolated origins and loopback HTTP opt-in. An initial test fixture typing error and a formatting warning were corrected before successful checks; unsuccessful exploratory runs are not counted as passing evidence.
+- `npm run test:e2e`: **all 15 production browser checks passed** across 1440, 1024, 768, 375 and 320px, retaining actual auth/MFA/session/CRUD/analytics workflows, error cases, overflow and WCAG-tag checks. Screenshot generation remained off because no UI changed.
+- Dedicated `node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop`: **one passed** (33.5s test / 42.4s runner). The 200-doctor/4,000-patient profile reproduced the Stage 5 payload sizes exactly: empty-dashboard JS 193,275 bytes transferred, populated dashboard 298,621 bytes and Bengali font 244,604 bytes. No new performance gain or production SLA is claimed.
+- Development/React Strict Mode dashboard rechecks: **three passed** at 1440, 375 and 320px. The complete development CRUD suite was not repeated.
+- `npm run test:operations` passed **12 local Windows checks**, including the explicitly labeled Windows cleanup/real-signal limitation. It exercises actual compiled production startup/config rejection, missing-index failure and gated preparation, verified MongoDB TLS through a local bridge, actual Next HTTPS build/start, real browser invitation/MFA/refresh/CSRF/CORS/doctor/patient/analytics/logout, separate BSON/index restoration with real recovery login, database outage/reconnect and absent public source maps.
+- The operational rehearsal generates temporary keys/certificates and only targets its own disposable replica set. Browser trust for the temporary certificate is relaxed locally; a Node HTTPS client and the MongoDB driver independently validate the supplied CA. Next performs normal web env loading with explicit fixture overrides; no API env file/external DB URI is used and environment files are not modified.
+- Full and production-only `npm audit --audit-level=moderate` / `npm audit --omit=dev --audit-level=moderate`: **zero vulnerabilities**. No application dependency/lockfile update is needed. OpenSSL and Chromium are development/CI prerequisites for the separate operational test.
+- A targeted selected-pattern scan of **nine reachable commits** found zero matching file revisions; actual environment files are not tracked in reachable history. The staged diff is separately reviewed. This is bounded exposure review, not a guarantee of secret-free history or a new public security certification.
+
+The CI operational step exercises real Linux SIGTERM/SIGINT in addition to shared lifecycle tests; Windows process termination is not represented as POSIX signal evidence. Exact pushed commit/Actions result and final clean status are reported in the delivery handoff.
+
+No UI/branding/CSS/font/chart behavior change was made, so the existing 80 screenshots remain unchanged and generation is now explicit opt-in. Stage 5's conditional plot/WOFF2, queries, URL pagination and freshness remain. Performance fixture results are local observations, not a production SLA.
+
+### Remaining production blockers
+
+Hosting/provider/region and runtime/supervisor, real domain/DNS/TLS/proxy path, secret manager, actual Atlas tier/network/permissions/backup capability, backup owner/retention and approved/measured RPO/RTO, monitoring destination and explicit release approval are still required. Live public TLS/cookies/CORS/CSP/proxy spoofing, Atlas failover/restore, host termination/draining, sizing and alert delivery remain manual verification. The BSON rehearsal is partial application recovery evidence; it does not exercise Atlas snapshots/PITR or Database Tools. No production deployment or privacy/clinical/accessibility certification is claimed.
+
+See [Stage 6 readiness](STAGE6_DEPLOYMENT_READINESS.md), [approval gate](DEPLOYMENT_READINESS.md) and [Production Deployment Runbook](PRODUCTION_DEPLOYMENT_RUNBOOK.md). Prior-stage verification below is historical.
+
 ## Stage 5 — quality audit, measured refinements and deployment readiness
 
 Implemented 9 November 2026 from `3695d35f95505be559671936b39c11227a143722` on the selected public `akonBRO/doctor_tracker` main branch. The approved light composition and logo geometry remain. No Stage 6 deployment, Atlas fixture/load operation, environment-file edit, schema migration or unrelated feature was performed.

@@ -60,7 +60,7 @@ An empty result has `items: []` and `totalPages: 0`. A page beyond the available
 
 ## Indexing decisions and measured evidence
 
-The model creates these indexes during the existing database initialization:
+Development/test initialization and the explicitly approved production preparation command create these indexes. Stage 6 production startup only verifies that they exist and are compatible; it never creates/syncs/drops them automatically:
 
 ```text
 { createdAt: -1, _id: -1 }
@@ -118,6 +118,7 @@ In PowerShell:
 ```powershell
 $env:API_ORIGIN = 'http://127.0.0.1:4100'
 $env:APP_ORIGIN = 'http://127.0.0.1:3100'
+$env:WEB_ALLOW_LOCAL_HTTP = 'true'
 npm run build
 npm run test:e2e
 ```

@@ -7,7 +7,10 @@
     "predev": "npm run build -w @doctor-tracker/shared",
     "dev": "tsx watch --env-file=.env src/server.ts",
     "build": "tsc",
-    "start": "node --env-file=.env dist/server.js",
+    "start": "node dist/server.js --require-production",
+    "start:local": "node --env-file=.env dist/server.js",
+    "db:prepare": "node dist/cli/prepare-database.js",
+    "invite:production": "node dist/cli/invite.js",
     "typecheck": "tsc --noEmit",
     "invite": "tsx --env-file=.env src/cli/invite.ts"
   },

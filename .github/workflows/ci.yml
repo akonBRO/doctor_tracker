@@ -10,6 +10,7 @@ jobs:
       NEXT_TELEMETRY_DISABLED: '1'
       API_ORIGIN: http://127.0.0.1:4100
       APP_ORIGIN: http://127.0.0.1:3100
+      WEB_ALLOW_LOCAL_HTTP: 'true'
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -27,4 +28,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop
+      - run: npm run test:operations
       - run: npm audit --audit-level=moderate
+      - run: npm audit --omit=dev --audit-level=moderate

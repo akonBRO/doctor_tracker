@@ -12,6 +12,7 @@ export async function capturePage(page: Page, project: string, name: string, mas
   });
   const directory =
     process.env.E2E_WEB_MODE === 'development' ? 'tmp/screenshots-development' : 'docs/screenshots';
+  if (process.env.E2E_CAPTURE_SCREENSHOTS !== 'true') return;
   await page.screenshot({
     path: `${directory}/${name}-${project}.png`,
     fullPage: true,

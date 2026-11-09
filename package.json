@@ -23,6 +23,7 @@
     "lint": "eslint . --max-warnings 0",
     "test": "npm run build -w @doctor-tracker/shared && vitest run",
     "test:e2e": "node scripts/test-e2e.mjs",
+    "test:operations": "npm run build -w @doctor-tracker/shared && npm run build -w @doctor-tracker/api && tsx scripts/test-operations.ts",
     "build": "npm run build -w @doctor-tracker/shared && npm run build -w @doctor-tracker/api && npm run build -w @doctor-tracker/web"
   },
   "devDependencies": {
