@@ -385,6 +385,7 @@ async function main() {
     await page.getByLabel(/^Mobile number/).fill('01812345678');
     await page.getByLabel('Condition', { exact: false }).fill('Disposable review');
     await page.getByRole('button', { name: 'Save patient', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Patients (1)', exact: true })).toBeVisible();
     await page.goto(`${origin}/dashboard`);
     await expect(page.getByRole('link', { name: '1 total patients', exact: true })).toBeVisible();
     assert.deepEqual(
@@ -392,6 +393,9 @@ async function main() {
       [[], []],
     );
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    // Wait for the actual mutation/redirect before issuing another navigation.
+    // Otherwise page.goto can abort the pending logout.
+    await expect(page).toHaveURL(/\/login$/);
     await page.goto(`${origin}/dashboard`);
     await expect(page).toHaveURL(/\/login$/);
     pass(
