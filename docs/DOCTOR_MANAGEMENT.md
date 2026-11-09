@@ -27,7 +27,7 @@ Only `name`, `specialization`, `hospital`, `phone`, and `email` are accepted. Cl
 | Phone          | Required string; 7–15 digits; optional leading country-code `+`, spaces, parentheses, dots and hyphens; at most 40 formatted characters |
 | Email          | Required; valid syntax, trimmed and lowercased; maximum 254 characters                                                                  |
 
-Text fields trim surrounding whitespace, normalize Unicode with NFKC, collapse repeated whitespace, require a letter or number, and reject remaining control characters. Mongoose validates fields as well as the authoritative shared Zod request schema. Email and phone are **not unique**: shared contact details are legitimate and the specification does not impose uniqueness. Phone validation checks reasonable syntax, not actual assignment, ownership, or reachability; extensions are not supported.
+Text fields trim surrounding whitespace, normalize Unicode with NFKC, collapse repeated whitespace, require a letter or number, and reject remaining control characters. Mongoose validates fields as well as the authoritative shared Zod request schema. Email and phone are **not unique**: shared contact details are legitimate and the specification does not impose uniqueness. Bangladesh mobile inputs in local 01 or country-code 880 form must match the valid 013-019 eleven-digit pattern and normalize to `+880...`; local display is preserved in the interface. Legitimate hospital landlines and other international-format numbers remain accepted. Existing stored numbers remain readable without a migration. Phone validation checks reasonable syntax, not actual assignment, ownership, or reachability; extensions are not supported.
 
 MongoDB supplies `_id`, `createdAt`, and `updatedAt`. The public projection exposes `id`, the five fields, and ISO UTC timestamps. Internal version/search fields never appear in the API. The model derives `nameKey`, `specializationKey`, `hospitalKey`, and `searchTokens` for the specific queries below. Future doctor-update code must recompute those fields through the same normalization/model path; no update API is shipped now.
 
@@ -93,7 +93,7 @@ Meaningful state lives in URL search parameters. Native History API calls integr
 
 The table becomes structured stacked records on tablet/narrow screens. Inputs, pagination, Add Doctor and detail actions remain available at 1440, 1024, 768, 375 and 320 pixels. Add Doctor uses a dedicated route, controlled fields, inline errors, focused validation, immediate duplicate-submit protection, pending feedback, deliberate discard/cancel handling, and a browser unload guard. Form entries survive service/session errors. Expired-access restoration happens before a write; a submitted mutation is never automatically replayed. Re-login can occur in a new tab while keeping the form open. If a network failure makes a write outcome uncertain, the UI asks the administrator to check the directory before resubmitting; server-side idempotency keys are not introduced in this stage.
 
-The list distinguishes loading, a genuinely empty directory, no matches, out-of-range pages, and safe service/validation errors. Details distinguish invalid links, absent records, unavailable service and authorization failures. Doctor text is escaped by React, including link labels. No raw HTML is rendered. The Stage 3 shell, typography and record layouts replace the prior presentation; logo geometry and route behavior remain.
+The list distinguishes loading, a genuinely empty directory, no matches, out-of-range pages, and safe service/validation errors. Details distinguish invalid links, absent records, unavailable service and authorization failures. Doctor text is escaped by React, including link labels. No raw HTML is rendered. The Stage 3 correction uses white navigation, readable sky-blue controls, a five-column directory and a concise profile header leading into real assigned-patient search; logo geometry and route behavior remain.
 
 ## Verification and local execution
 
@@ -109,15 +109,15 @@ npm run test:e2e
 npm audit
 ```
 
-Browser tests require ports 3000/4000 to be free. The fixture creates its own replica set, real invitations, MFA sessions and doctor records, then tears them down. Successful persistence/search/details use actual Express/MongoDB, while explicitly intercepted 401/503/slow responses exercise UI recovery and cancellation. They do not substitute mocked data for successful operations.
+Browser tests use dedicated 127.0.0.1 ports 3100/4100 and fail if occupied; normal development ports 3000/4000 are left alone. The fixture verifies its own API identity before any workflow. The fixture creates its own replica set, real invitations, MFA sessions and doctor records, then tears them down. Successful persistence/search/details use actual Express/MongoDB, while explicitly intercepted 401/503/slow responses exercise UI recovery and cancellation. They do not substitute mocked data for successful operations.
 
-**If your web `.env` uses another API destination, build in a dedicated test terminal with `API_ORIGIN=http://127.0.0.1:4000` and `APP_ORIGIN=http://localhost:3000`.** Rewrites are baked into Next.js builds. The fixture checks the production rewrite before starting and refuses to target another environment. GitHub Actions supplies these test-only origin values. No environment file is modified.
+**For browser verification, build in a dedicated test terminal with `API_ORIGIN=http://127.0.0.1:4100` and `APP_ORIGIN=http://127.0.0.1:3100`.** Rewrites are baked into Next.js builds. The fixture checks the production rewrite before starting and refuses to target another environment. GitHub Actions supplies these test-only origin values. No environment file is modified.
 
 In PowerShell:
 
 ```powershell
-$env:API_ORIGIN = 'http://127.0.0.1:4000'
-$env:APP_ORIGIN = 'http://localhost:3000'
+$env:API_ORIGIN = 'http://127.0.0.1:4100'
+$env:APP_ORIGIN = 'http://127.0.0.1:3100'
 npm run build
 npm run test:e2e
 ```
@@ -126,7 +126,7 @@ Set `E2E_WEB_MODE=development` to exercise the same suite in Next.js development
 
 ## Stage 3 patient integration - implemented
 
-Doctor details now query real paginated Patient records using the validated parent ID, show the actual count, and expose Add patient plus permanent scoped deletion. The global patient directory link preserves `doctorId`. Both IDs must match for nested deletion; an invalid/missing doctor never falls back to global records. Doctor bodies and existing directory contracts are unchanged.
+Doctor details now query real paginated Patient records using the validated parent ID, show the actual count, and expose Add patient plus permanent scoped deletion. The global patient directory link preserves `doctorId`. Both IDs must match for nested deletion; an invalid/missing doctor never falls back to global records. The five doctor fields and directory query contracts remain; new Bangladesh-mobile writes gain normalization and format validation.
 
 See [PATIENT_MANAGEMENT.md](PATIENT_MANAGEMENT.md) for exact routes, schema, immutable assignments, deletion semantics, query budgets and security. The Stage 3 redesign restyles all Doctor pages and replaces the prior unavailable patient placeholder. The symbol geometry and Stage 2 URL/filter/form behavior remain.
 

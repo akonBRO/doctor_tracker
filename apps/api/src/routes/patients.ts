@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { rateLimit } from 'express-rate-limit';
 import {
   doctorIdSchema,
@@ -56,7 +57,7 @@ export function patientRoutes(auth: AuthService) {
     }),
   );
   router.delete('/patients/:patientId', rejectQueryParameters, mutations, async (req, res) => {
-    patientInputSchema.pick({}).parse(req.body);
+    z.strictObject({}).parse(req.body);
     res.json({
       data: await deletePatient(res.locals.admin, patientIdSchema.parse(req.params.patientId)),
     });
@@ -84,7 +85,7 @@ export function patientRoutes(auth: AuthService) {
     rejectQueryParameters,
     mutations,
     async (req, res) => {
-      patientInputSchema.pick({}).parse(req.body);
+      z.strictObject({}).parse(req.body);
       res.json({
         data: await deletePatient(
           res.locals.admin,

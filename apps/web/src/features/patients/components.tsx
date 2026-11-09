@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   doctorIdSchema,
+  formatBangladeshPhone,
   type Doctor,
   type DoctorDirectory,
   type Patient,
@@ -10,7 +11,7 @@ import {
 } from '@doctor-tracker/shared';
 import { api, ApiError } from '../../lib/api';
 import { useDoctorQuery as useRecordQuery } from '../doctors/use-doctor-query';
-import { doctorDate } from '../doctors/helpers';
+import { ageLabel, genderLabels } from './helpers';
 export function RecordState({
   loading,
   error,
@@ -93,10 +94,13 @@ export function DoctorPicker({
           setSearch(e.target.value);
           setOpen(true);
         }}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') setOpen(false);
+        }}
         aria-describedby={`${id}-hint`}
       />
       <p id={`${id}-hint`} className="field-hint">
-        Select a doctor from the results. Type to narrow the list.
+        Choose a doctor from the search results.
       </p>
       {open && (
         <>
@@ -195,13 +199,15 @@ export function PatientRecords({
         <>
           <div className="patient-table-wrap">
             <table className="patient-table">
-              <caption className="sr-only">Patient records. Added dates are in UTC.</caption>
+              <caption className="sr-only">
+                Patient records{scope ? ' assigned to this doctor' : ''}.
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Patient</th>
                   <th scope="col">Condition</th>
-                  <th scope="col">Assigned doctor</th>
-                  <th scope="col">Added</th>
+                  <th scope="col">Mobile</th>
+                  {!scope && <th scope="col">Assigned doctor</th>}
                   <th scope="col">Actions</th>
                 </tr>
               </thead>
@@ -212,14 +218,25 @@ export function PatientRecords({
                       <Link className="patient-name" href={detail(p)}>
                         {p.name}
                       </Link>
+                      <span className="patient-row-demographics">
+                        {[ageLabel(p), p.gender ? genderLabels[p.gender] : '']
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
                     </td>
                     <td>{p.condition}</td>
                     <td>
-                      <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
+                      {p.mobile ? (
+                        <a href={`tel:${p.mobile}`}>{formatBangladeshPhone(p.mobile)}</a>
+                      ) : (
+                        <span className="patient-unrecorded">Not recorded</span>
+                      )}
                     </td>
-                    <td>
-                      <time dateTime={p.createdAt}>{doctorDate(p.createdAt)}</time>
-                    </td>
+                    {!scope && (
+                      <td>
+                        <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
+                      </td>
+                    )}
                     <td>{actions(p)}</td>
                   </tr>
                 ))}
@@ -232,20 +249,33 @@ export function PatientRecords({
                 <Link className="patient-name" href={detail(p)}>
                   {p.name}
                 </Link>
+                <p className="patient-row-demographics">
+                  {[ageLabel(p), p.gender ? genderLabels[p.gender] : '']
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
                 <dl>
                   <div>
                     <dt>Condition</dt>
                     <dd>{p.condition}</dd>
                   </div>
+                  {!scope && (
+                    <div>
+                      <dt>Doctor</dt>
+                      <dd>
+                        <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
+                      </dd>
+                    </div>
+                  )}
                   <div>
-                    <dt>Doctor</dt>
+                    <dt>Mobile</dt>
                     <dd>
-                      <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
+                      {p.mobile ? (
+                        <a href={`tel:${p.mobile}`}>{formatBangladeshPhone(p.mobile)}</a>
+                      ) : (
+                        'Not recorded'
+                      )}
                     </dd>
-                  </div>
-                  <div>
-                    <dt>Added</dt>
-                    <dd>{doctorDate(p.createdAt)}</dd>
                   </div>
                 </dl>
                 {actions(p)}

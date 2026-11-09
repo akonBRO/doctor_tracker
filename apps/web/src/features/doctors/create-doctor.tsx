@@ -11,12 +11,17 @@ const inputs = [
   {
     key: 'name',
     label: 'Doctor name',
-    placeholder: 'Full name, including title if used',
+    placeholder: 'e.g. Dr. Nadia Rahman',
     max: 120,
   },
   { key: 'specialization', label: 'Specialization', placeholder: 'e.g. Cardiology', max: 100 },
-  { key: 'hospital', label: 'Hospital', placeholder: 'Hospital or practice name', max: 160 },
-  { key: 'phone', label: 'Phone', placeholder: 'Include country code where applicable', max: 40 },
+  {
+    key: 'hospital',
+    label: 'Hospital',
+    placeholder: 'e.g. Dhaka Medical College Hospital',
+    max: 160,
+  },
+  { key: 'phone', label: 'Phone', placeholder: '01712345678 or +8801712345678', max: 40 },
   { key: 'email', label: 'Email', placeholder: 'doctor@example.com', max: 254 },
 ] as const;
 export function CreateDoctorPage() {
@@ -109,9 +114,8 @@ export function CreateDoctorPage() {
       </Link>
       <div className="doctor-page-heading">
         <div>
-          <p className="eyebrow">DOCTOR DIRECTORY</p>
           <h1>Add Doctor</h1>
-          <p>Record the details your team needs. All five fields are required.</p>
+          <p>All fields are required.</p>
         </div>
       </div>
       <form
@@ -151,7 +155,7 @@ export function CreateDoctorPage() {
               />
               {input.key === 'phone' && (
                 <p id="phone-hint" className="field-hint">
-                  7–15 digits. Country codes and common formatting are supported.
+                  Bangladesh mobile, hospital landline or international number.
                 </p>
               )}
               {fields[input.key] && (

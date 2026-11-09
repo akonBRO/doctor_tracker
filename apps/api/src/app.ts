@@ -63,7 +63,16 @@ export async function createApp(config: Config) {
       allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
     }),
   );
-  app.use(express.json({ limit: '16kb', strict: true }), cookieParser());
+  const ordinaryJson = express.json({ limit: '16kb', strict: true });
+  const patientJson = express.json({ limit: '64kb', strict: true });
+  // Expanded multilingual registration notes need a bounded larger body; auth and doctor limits stay unchanged.
+  app.use((req, res, next) => {
+    const patientWrite =
+      (req.method === 'POST' &&
+        /^\/api\/v1\/doctors\/[a-fA-F0-9]{24}\/patients\/?$/.test(req.path)) ||
+      (req.method === 'PATCH' && /^\/api\/v1\/patients\/[a-fA-F0-9]{24}\/?$/.test(req.path));
+    (patientWrite ? patientJson : ordinaryJson)(req, res, next);
+  }, cookieParser());
   app.use(csrfProtection(config), rejectUnsafeInput);
   const limiter = (limit: number, windowMs = 15 * 60_000) =>
     rateLimit({

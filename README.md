@@ -1,6 +1,6 @@
 # Doctor Tracker
 
-Doctor Tracker implements **Stages 1-3**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, and a redesigned clinical registry interface. Search, combined filters, pagination, doctor assignments, editing and permanent deletion use the independent Express API and MongoDB. Analytics are reserved for Stage 4.
+Doctor Tracker implements **Stages 1-3**: invitation-based administrator access with mandatory MFA, a real doctor directory, complete patient management, and a light hospital administration interface with Bangladesh-oriented patient registration. Search, combined filters, pagination, doctor assignments, editing and permanent deletion use the independent Express API and MongoDB. Analytics are reserved for Stage 4.
 
 Public source: **[akonBRO/doctor_tracker](https://github.com/akonBRO/doctor_tracker)**. Completed updates are committed and pushed to `origin` as requested by the owner. No deployment has been performed.
 
@@ -135,7 +135,7 @@ Passwords use Argon2id. MFA secrets use AES-256-GCM at rest. Invitations, refres
 
 ## Doctor Management — Stage 2
 
-Use `/doctors` to browse the directory, `/doctors/new` to create a record, and `/doctors/[doctorId]` for practice/contact details. The form contains only name, specialization, hospital, phone and email. Contact fields are not unique; doctors do not receive login accounts. The existing brand, public/auth pages and administrative layout are retained. Narrow screens use structured stacked records rather than a compressed desktop table.
+Use `/doctors` to browse the directory, `/doctors/new` to create a record, and `/doctors/[doctorId]` for practice/contact details. The form contains only name, specialization, hospital, phone and email. Contact fields are not unique; doctors do not receive login accounts. The original logo geometry and authentication flows are retained within the corrected light interface. Narrow screens use structured stacked records rather than a compressed desktop table.
 
 | Method | Endpoint                    | Purpose                                                        |
 | ------ | --------------------------- | -------------------------------------------------------------- |
@@ -154,40 +154,45 @@ Successful browser tests use actual invitations/MFA/doctor APIs and an isolated 
 
 ## Patient Management and redesign - Stage 3
 
-Patients store name, free-text condition, immutable doctorId and timestamps. Create under an existing doctor or select one using a real directory lookup. The global directory supports name/condition prefix search, condition/doctor/UTC date filters, stable sorting and server pagination. Prefilled editing preserves failed-save drafts. Delete confirmation permanently removes the record from both global and doctor-scoped lists. Doctor details show real patient counts and paginated records.
+Patient registration includes English/display and optional Bangla names, date of birth or explicitly approximate age, gender, blood group, mobile, optional email, validated Bangladesh division/district selectors, address, emergency contact and concise medical context. New records require name, condition, mobile, gender, age information and an actual assigned doctor. Older minimal records remain readable and editable without invented values. Unknown blood group and unknown allergies remain distinct from confirmed results; no NID is collected.
 
-The new clinical ledger uses graphite navigation, mineral-white content, rust actions, readable 16px inputs and tables that become labeled records on phones. The landing is typographic; authentication is a single task-focused column. The original logo geometry is retained with updated colors. No fabricated statistics or patient records appear in the application.
+Create from a doctor profile or choose a doctor through actual database search. Directories preserve search, filters, sorting and pagination. Editing submits only changed fields, retains failed-save drafts and protects doctor assignment. Patient details separate identity, medical information, contacts and a clickable doctor link. Explicit permanent deletion removes the record from both directories.
+
+The Stage 3 correction replaces the rejected composition with white navigation, sky-blue active states, a centered landing page, focused authentication, a task-based dashboard, a compact doctor profile and grouped registration forms. Inputs are 16px and labels 15px; Noto Sans Bengali is self-hosted alongside the existing typefaces. Narrow layouts use labeled records. No fake analytics or production seed records are included.
 
 See [Patient Management](docs/PATIENT_MANAGEMENT.md) for endpoints, schema, scopes, indexing, deletion and Stage 4 integration; [Design Redesign](docs/DESIGN_REDESIGN.md) for the brief, references and visual review.
 
 ## Scripts and verification
 
-| Command                               | Operation                                                            |
-| ------------------------------------- | -------------------------------------------------------------------- |
-| `npm run dev`                         | Both apps, with independent processes                                |
-| `npm run dev:web` / `npm run dev:api` | Run one application                                                  |
-| `npm run dev:db`                      | Disposable real MongoDB replica set                                  |
-| `npm run setup:local`                 | Create ignored local environments and strong random keys             |
-| `npm run invite -- email`             | Create a private one-time administrator invitation                   |
-| `npm run typecheck`                   | Strict checks for apps, shared schemas, tests and tooling            |
-| `npm run lint`                        | ESLint; zero warnings permitted                                      |
-| `npm run format:check`                | Check formatting                                                     |
-| `npm test`                            | Security/integration tests with a fresh MongoDB replica set          |
-| `npm run build`                       | Shared package, Express and production Next.js builds                |
-| `npm run test:e2e`                    | Production Chromium tests; build first and keep ports 3000/4000 free |
-| `npm audit` / `npm audit --omit=dev`  | Full / production vulnerability audits                               |
+| Command                               | Operation                                                              |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| `npm run dev`                         | Both apps, with independent processes                                  |
+| `npm run dev:web` / `npm run dev:api` | Run one application                                                    |
+| `npm run dev:db`                      | Disposable real MongoDB replica set                                    |
+| `npm run setup:local`                 | Create ignored local environments and strong random keys               |
+| `npm run invite -- email`             | Create a private one-time administrator invitation                     |
+| `npm run typecheck`                   | Strict checks for apps, shared schemas, tests and tooling              |
+| `npm run lint`                        | ESLint; zero warnings permitted                                        |
+| `npm run format:check`                | Check formatting                                                       |
+| `npm test`                            | Security/integration tests with a fresh MongoDB replica set            |
+| `npm run build`                       | Shared package, Express and production Next.js builds                  |
+| `npm run test:e2e`                    | Isolated Chromium tests on 3100/4100; use the test build origins below |
+| `npm audit` / `npm audit --omit=dev`  | Full / production vulnerability audits                                 |
 
 For browser tests, install Chromium once:
 
-```sh
+```powershell
 npx playwright install chromium
+# PowerShell test-build environment; does not edit .env files
+$env:API_ORIGIN = 'http://127.0.0.1:4100'
+$env:APP_ORIGIN = 'http://127.0.0.1:3100'
 npm run build
 npm run test:e2e
 ```
 
-On Linux CI, use `npx playwright install --with-deps chromium`. The browser runner starts each viewport with its own actual API/web processes and fresh isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 1024, 768, 375, and 320 pixels, then tears down its servers. This keeps the actual MFA/IP limits intact across five independent full workflows. Test identities are disposable; they are never seeded into your configured database.
+On Linux CI, use `npx playwright install --with-deps chromium`. Browser tests use dedicated 127.0.0.1 ports 3100 (web) and 4100 (API), reject occupied ports, verify their own API fixture identity and leave normal development on 3000/4000 running. Run the above environment commands in a separate test terminal; rebuild with normal origins before a regular production start. The browser runner starts each viewport with its own actual API/web processes and fresh isolated database, creates private test invitations, exercises real enrollment and refresh, checks responsive overflow and accessibility at 1440, 1024, 768, 375, and 320 pixels, then tears down its servers. This keeps the actual MFA/IP limits intact across five independent full workflows. Test identities are disposable; they are never seeded into your configured database.
 
-Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. This development suite has also passed at all five viewport sizes.
+Set `E2E_WEB_MODE=development` to run the same browser suite against `next dev` and React Strict Mode, using an ignored separate `.next-e2e` build directory. In PowerShell, set `$env:E2E_WEB_MODE = 'development'` before running the suite, then remove that environment variable afterward. See the implementation status for the latest production and development verification results.
 
 For production-process smoke testing locally after a build, run these in separate terminals with your configured database running:
 
@@ -210,10 +215,10 @@ Screenshots are generated from actual production-browser tests. All identities a
 | ![Five-field doctor creation form](docs/screenshots/doctor-create-desktop.png)                     | ![Doctor creation form on a small phone](docs/screenshots/doctor-create-small-mobile.png)        |
 | ![Saved doctor details](docs/screenshots/doctor-detail-desktop.png)                                | ![Doctor details and actual assigned patient records](docs/screenshots/doctor-detail-mobile.png) |
 
-Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creation](docs/screenshots/patient-create-desktop.png), [editing](docs/screenshots/patient-edit-desktop.png), [320px directory](docs/screenshots/patients-small-mobile.png). The [design record](docs/DESIGN_REDESIGN.md) links every required page at all five widths.
+Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creation](docs/screenshots/patient-create-desktop.png), [detail](docs/screenshots/patient-detail-desktop.png), [editing](docs/screenshots/patient-edit-desktop.png), [320px directory](docs/screenshots/patients-small-mobile.png). The [design record](docs/DESIGN_REDESIGN.md) links every required page at all five widths.
 
 ## Current boundaries
 
-Stages 1-3 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, and patient creation/listing/details/editing/permanent deletion under validated doctors. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, clinical histories and reporting are outside this stage.
+Stages 1-3 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, and patient creation/listing/details/editing/permanent deletion under validated doctors. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions, billing and reporting are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
 
 Stage 4 analytics, Stage 5 workload refinements and Stage 6 deployment remain future work. Atlas connectivity was verified without changing records; no deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

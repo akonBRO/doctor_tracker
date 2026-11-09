@@ -2,13 +2,15 @@
 
 This is an application foundation, not a claim of regulatory compliance or a penetration-test certification. Do not store real patient information until the applicable record security, operating controls, backups, and deployment review are complete.
 
-## Stage 3 patient controls
+## Stage 3 patient controls and correction
 
 Patient create/read/edit/delete require the same verified administrator, completed MFA and active database session. Services enforce role checks; nested queries validate the existing doctor and bind deletion to both IDs. Assignments are immutable and strict bodies reject IDs, timestamps, roles and other properties. Global/nested filters are bounded, literal prefix regexes are escaped, MongoDB/prototype keys are rejected, and all record text is escaped by React under the retained nonce CSP.
 
 POST/PATCH/DELETE require the signed CSRF header/cookie pair, exact trusted Origin and JSON. CORS permits GET/POST/PATCH/DELETE only for the configured origin, with credentials. Patient mutations share a 100-attempt/15-minute per-admin limit; the global limit and existing auth limits remain. Safe reads may refresh sessions; mutations are never automatically replayed. Logs omit request bodies, URLs and patient data.
 
-Atomic updates derive keys/tokens from the resulting document and do not upsert; atomic deletion returns success only for an actually removed record. Tests cover cross-parent deletion, malformed filters, CSRF/auth, injection, permanent removal and concurrent edits/deletion using disposable replica sets. Screenshot fixtures never use Atlas and mask MFA setup keys. Atlas connectivity was verified read-only with indexing/creation disabled; no configured data or environment files were changed.
+Expanded registration fields remain optional on stored legacy records. New registrations validate required contact/demographic information; no NID is collected. Directory responses omit optional clinical notes, allergies, emergency contacts, address and email; protected detail/edit reads retrieve them only when needed. Patient POST/PATCH JSON is bounded to 64 KiB for multilingual content, while authentication and ordinary endpoints retain 16 KiB. Size/validation/server error responses and logs never echo patient field values.
+
+Atomic updates derive keys/tokens from the resulting document and do not upsert; atomic deletion returns success only for an actually removed record. Tests cover cross-parent deletion, malformed filters, CSRF/auth, injection, permanent removal and concurrent edits/deletion using disposable replica sets. Screenshot fixtures never use Atlas and mask MFA setup keys. Atlas connectivity was verified read-only in the original Stage 3 delivery with indexing/creation disabled; this correction uses disposable databases only; no configured data or environment files were changed.
 
 This remains one shared admin workspace, with no per-admin record ownership. Future tenant isolation must be enforced consistently at query level. No uploads, webhooks, arbitrary URL fetchers or default credentials were introduced. Deployment edge controls, persistent backups and shared rate stores remain operational requirements below.
 

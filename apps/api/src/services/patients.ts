@@ -2,16 +2,22 @@ import { Types } from 'mongoose';
 import {
   doctorKey,
   doctorWords,
+  PATIENT_RECORD_FIELDS,
+  patientInputSchema,
+  patientUpdateSchema,
   type AdminIdentity,
   type PatientInput,
   type PatientQuery,
   type PatientUpdate,
 } from '@doctor-tracker/shared';
 import { DoctorModel } from '../models/doctor.js';
-import { PatientModel } from '../models/patient.js';
+import { PatientModel, type StoredPatient } from '../models/patient.js';
 import { AppError } from '../utils/errors.js';
 
-const projection = 'name condition doctorId createdAt updatedAt';
+const projection = [...PATIENT_RECORD_FIELDS, 'doctorId', 'createdAt', 'updatedAt'].join(' ');
+// Directory rows do not need emergency contacts, full addresses, or clinical histories.
+const directoryProjection =
+  'name condition dateOfBirth approximateAge gender mobile doctorId createdAt updatedAt';
 const prefix = (value: string) => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
 function authorize(admin: AdminIdentity) {
   if (!admin || admin.role !== 'admin')
@@ -46,18 +52,14 @@ export function patientFilter(query: PatientQuery) {
     };
   return filter;
 }
-type Stored = {
-  _id: Types.ObjectId;
-  name: string;
-  condition: string;
-  doctorId: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-};
-const present = (record: Stored, doctor: Awaited<ReturnType<typeof parent>>) => ({
+const present = (record: StoredPatient, doctor: Awaited<ReturnType<typeof parent>>) => ({
   id: record._id.toString(),
-  name: record.name,
-  condition: record.condition,
+  ...Object.fromEntries(
+    PATIENT_RECORD_FIELDS.filter((key) => record[key] !== undefined).map((key) => [
+      key,
+      record[key],
+    ]),
+  ),
   doctorId: record.doctorId.toString(),
   doctor,
   createdAt: record.createdAt.toISOString(),
@@ -65,11 +67,11 @@ const present = (record: Stored, doctor: Awaited<ReturnType<typeof parent>>) => 
 });
 export async function createPatient(admin: AdminIdentity, doctorId: string, input: PatientInput) {
   authorize(admin);
+  const validated = patientInputSchema.parse(input);
   const doctor = await parent(doctorId);
   // Doctor removal is not exposed by this application. The validated parent is immutable here.
   const record = await PatientModel.create({
-    name: input.name,
-    condition: input.condition,
+    ...validated,
     doctorId,
   });
   return { patient: present(record, doctor) };
@@ -91,7 +93,7 @@ export async function listPatients(admin: AdminIdentity, query: PatientQuery, sc
   if (!Object.keys(filter).length) count.hint('_id_');
   const [records, totalItems] = await Promise.all([
     PatientModel.find(filter)
-      .select(projection)
+      .select(directoryProjection)
       .sort(sort)
       .skip((query.page - 1) * query.limit)
       .limit(query.limit)
@@ -142,15 +144,19 @@ export async function getPatient(admin: AdminIdentity, id: string) {
 }
 export async function updatePatient(admin: AdminIdentity, id: string, input: PatientUpdate) {
   authorize(admin);
+  const validated = patientUpdateSchema.parse(input);
   // Only supplied fields are set atomically: parallel name/condition edits cannot overwrite each other.
-  const set: Record<string, unknown> = {};
-  if (input.name !== undefined) {
-    set.name = input.name;
-    set.nameKey = doctorKey(input.name);
+  const set: Record<string, unknown> = Object.fromEntries(
+    PATIENT_RECORD_FIELDS.filter((key) => validated[key] !== undefined).map((key) => [
+      key,
+      validated[key],
+    ]),
+  );
+  if (validated.name !== undefined) {
+    set.nameKey = doctorKey(validated.name);
   }
-  if (input.condition !== undefined) {
-    set.condition = input.condition;
-    set.conditionKey = doctorKey(input.condition);
+  if (validated.condition !== undefined) {
+    set.conditionKey = doctorKey(validated.condition);
   }
   // Derive tokens from the resulting document in the same atomic database operation.
   const record = await PatientModel.findOneAndUpdate(

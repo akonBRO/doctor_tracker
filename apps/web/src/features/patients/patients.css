@@ -1,0 +1,281 @@
+.patient-editor {
+  max-width: 1000px;
+}
+.patient-form.patient-form {
+  max-width: none;
+  padding: 32px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.patient-required-note {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+.patient-form .patient-form-section {
+  display: block;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.patient-form .patient-form-section + .patient-form-section {
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+  padding-top: 28px;
+}
+.patient-form-section legend {
+  font-size: 20px;
+  font-weight: 650;
+  padding: 0 0 20px;
+  width: 100%;
+  color: var(--ink);
+}
+.patient-form-section + .patient-form-section legend {
+  float: left;
+}
+.patient-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 24px;
+  clear: both;
+}
+.patient-field-grid > * {
+  min-width: 0;
+}
+.patient-field-wide {
+  grid-column: 1 / -1;
+}
+.patient-form .field label {
+  font-size: 15px;
+  font-weight: 500;
+}
+.patient-form .field input,
+.patient-form .field select,
+.patient-form .field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  font-size: 16px;
+}
+.patient-form .field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.patient-form .field-hint {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.patient-section-note {
+  color: var(--muted);
+  font-size: 14px;
+  clear: both;
+  margin: -8px 0 20px;
+}
+.patient-age-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px;
+  gap: 10px;
+}
+.patient-assignment {
+  display: grid;
+  gap: 6px;
+}
+.patient-assignment strong {
+  font-size: 18px;
+  font-weight: 600;
+}
+.patient-assignment > span,
+.patient-assignment .field-hint {
+  color: var(--muted);
+}
+.patient-form .form-error {
+  margin-top: 24px;
+}
+.patient-profile-heading {
+  align-items: flex-start;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+.patient-profile-heading h1 {
+  margin-bottom: 8px;
+}
+.patient-bangla-name {
+  color: var(--muted);
+  font-size: 19px !important;
+  margin-bottom: 14px;
+}
+.patient-identity-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.patient-blood-group {
+  border-radius: 4px;
+  background: var(--soft-blue, #eaf5fd);
+  color: var(--accent-hover);
+  padding: 4px 8px;
+  font-size: 14px;
+}
+.patient-record-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.patient-record-layout h2 {
+  font-size: 20px;
+  margin: 0 0 24px;
+}
+.patient-clinical-section {
+  min-width: 0;
+  padding: 28px 32px;
+}
+.patient-clinical-list,
+.patient-contact-list {
+  margin: 0;
+  display: grid;
+  gap: 24px;
+}
+.patient-clinical-list dt,
+.patient-contact-list dt {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.patient-clinical-list dd,
+.patient-contact-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.patient-clinical-list .patient-primary-condition {
+  font-size: 21px;
+  font-weight: 500;
+}
+.patient-record-aside {
+  min-width: 0;
+  padding: 28px;
+  background: #fbfdff;
+  border-left: 1px solid var(--line);
+}
+.patient-record-aside section + section {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.patient-record-aside h2 {
+  font-size: 17px;
+  margin-bottom: 18px;
+}
+.patient-record-aside a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+.patient-record-aside p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.patient-record-aside .patient-contact-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+.patient-record-doctor > a {
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.patient-record-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.patient-row-demographics {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+.patient-row-demographics:empty {
+  display: none;
+}
+.patient-unrecorded {
+  color: var(--muted);
+  font-size: 14px;
+}
+.doctor-patient-search {
+  max-width: 450px;
+  margin: 0 0 24px;
+}
+.patient-table a:not(.patient-name) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.patient-table .patient-actions button {
+  color: var(--danger);
+}
+@media (max-width: 850px) {
+  .patient-record-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .patient-record-aside {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+@media (max-width: 640px) {
+  .patient-form.patient-form {
+    padding: 24px 20px;
+  }
+  .patient-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .patient-form-section legend {
+    font-size: 19px;
+  }
+  .patient-profile-heading .record-actions {
+    width: 100%;
+  }
+  .patient-clinical-section,
+  .patient-record-aside {
+    padding: 24px 20px;
+  }
+  .patient-identity-line {
+    gap: 8px 14px;
+  }
+  .patient-record-layout h2 {
+    font-size: 19px;
+  }
+}
+@media (max-width: 360px) {
+  .patient-form.patient-form,
+  .patient-clinical-section,
+  .patient-record-aside {
+    padding: 20px 16px;
+  }
+  .patient-age-input {
+    grid-template-columns: minmax(0, 1fr) 90px;
+    gap: 8px;
+  }
+  .patient-profile-heading .record-actions > * {
+    flex: 1;
+    padding-inline: 10px;
+  }
+}

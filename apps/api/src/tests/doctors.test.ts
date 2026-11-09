@@ -141,6 +141,46 @@ describe('doctor creation and security', () => {
       ).toBe(201);
     expect(await DoctorModel.countDocuments()).toBe(3);
   });
+  it('normalizes Bangladesh mobile formats and preserves landline and international doctor contacts', async () => {
+    for (const phone of ['01712345678', '+8801712345678', '8801712345678', '+880 (1712) 345-678']) {
+      const result = await post({ ...doctor, phone });
+      expect(result.status).toBe(201);
+      expect(result.body.data.doctor.phone).toBe('+8801712345678');
+      expect((await DoctorModel.findById(result.body.data.doctor.id))?.phone).toBe(
+        '+8801712345678',
+      );
+    }
+    for (const phone of [
+      '02-55165000',
+      '031-618305',
+      '+880 2 55165000',
+      '+880 31 618305',
+      '+44 20 7946 0958',
+    ]) {
+      const result = await post({ ...doctor, phone });
+      expect(result.status).toBe(201);
+      expect(result.body.data.doctor.phone).toBe(phone);
+    }
+  });
+  it.each([
+    '0171234',
+    '017123456789',
+    '+8801712345',
+    '01212345678',
+    '8801212345678',
+    '+88001712345678',
+  ])('rejects a malformed Bangladesh mobile on new doctor creation: %s', async (phone) => {
+    expect((await post({ ...doctor, phone })).status).toBe(422);
+    expect(await DoctorModel.countDocuments()).toBe(0);
+  });
+  it('preserves reads of existing doctor phone data without applying new-write validation', async () => {
+    const existing = await DoctorModel.create(doctor);
+    // Emulate an older accepted contact in this isolated test database only.
+    await DoctorModel.collection.updateOne({ _id: existing._id }, { $set: { phone: '0171234' } });
+    expect((await get(`/${existing.id}`)).body.data.doctor.phone).toBe('0171234');
+    expect((await get()).body.data.items[0].phone).toBe('0171234');
+    expect((await DoctorModel.findById(existing.id))?.phone).toBe('0171234');
+  });
   it.each(['name', 'specialization', 'hospital', 'phone', 'email'])(
     'rejects missing %s',
     async (field) => {

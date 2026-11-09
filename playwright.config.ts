@@ -8,7 +8,7 @@ export default defineConfig({
   expect: { timeout: 10000 },
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:3100',
     browserName: 'chromium',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',

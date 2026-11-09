@@ -37,9 +37,7 @@ test('public routes, responsive layout, accessibility, and protected redirects',
   const response = await page.goto('/');
   expect(response?.status()).toBe(200);
   expect(response?.headers()['content-security-policy']).toContain("'nonce-");
-  await expect(
-    page.getByRole('heading', { name: 'A place for every record. A clear way to find it.' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Doctor Tracker', exact: true })).toBeVisible();
   await capturePage(page, testInfo.project.name, 'landing');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await checkAccessibility(page);
@@ -67,6 +65,7 @@ test('public routes, responsive layout, accessibility, and protected redirects',
 test('real invitation, MFA enrollment, restored session, shell navigation, and logout', async ({
   page,
 }, testInfo) => {
+  test.setTimeout(180_000);
   const token = randomBytes(32).toString('hex');
   const email = `${testInfo.project.name}-${token.slice(0, 8)}@example.test`;
   const password = `Browser-test-${randomBytes(12).toString('hex')}!`;

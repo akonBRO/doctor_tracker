@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
@@ -12,7 +12,14 @@ import { DoctorModel } from '../models/doctor.js';
 import { hashToken, randomToken } from '../utils/security.js';
 import { PatientModel } from '../models/patient.js';
 import { listPatients, createPatient } from '../services/patients.js';
-import { patientQuerySchema } from '@doctor-tracker/shared';
+import {
+  patientQuerySchema,
+  patientAgeLabel,
+  BLOOD_GROUPS,
+  BANGLADESH_DISTRICTS,
+  patientInputSchema,
+} from '@doctor-tracker/shared';
+import { logger } from '../utils/logger.js';
 
 let database: MongoMemoryReplSet;
 let config: Config;
@@ -97,7 +104,14 @@ function endpoint(method: 'post' | 'patch' | 'delete', path: string) {
   const client = request(app);
   return client[method](path);
 }
-const input = { name: 'Amina Rahman', condition: 'Follow-up / cardiology' };
+const input = {
+  name: 'Amina Rahman',
+  condition: 'Follow-up / cardiology',
+  mobile: '+8801712345678',
+  gender: 'female' as const,
+  dateOfBirth: '1994-04-12',
+  approximateAge: null,
+};
 const id = () => new mongoose.Types.ObjectId().toString();
 const read = (path: string) => request(app).get(`/api/v1${path}`).set('Cookie', cookies);
 const write = (method: 'post' | 'patch' | 'delete', path: string, body: object = {}) =>
@@ -128,7 +142,7 @@ describe('patient persistence and object security', () => {
       doctor: { id: d, name: doctor.name, specialization: doctor.specialization },
     });
     expect(Object.keys(result.body.data.patient).sort()).toEqual(
-      ['id', 'name', 'condition', 'doctorId', 'doctor', 'createdAt', 'updatedAt'].sort(),
+      ['id', ...Object.keys(input), 'doctorId', 'doctor', 'createdAt', 'updatedAt'].sort(),
     );
     expect(Object.keys(result.body.data.patient.doctor).sort()).toEqual([
       'id',
@@ -158,6 +172,7 @@ describe('patient persistence and object security', () => {
   it('normalizes whitespace while retaining international display text and free-text conditions', async () => {
     const d = await DoctorModel.create(doctor);
     const r = await write('post', `/doctors/${d.id}/patients`, {
+      ...input,
       name: '  José   李 ',
       condition: '  Review / BP  ',
     });
@@ -420,5 +435,311 @@ describe('patient directory queries', () => {
       ),
     ).toBe(true);
     expect(indexes.some((i) => i.key.searchTokens === 1)).toBe(true);
+  });
+});
+
+describe('Bangladesh registration and backwards compatibility', () => {
+  const expanded = {
+    ...input,
+    nameBangla: 'আমিনা রহমান',
+    bloodGroup: 'Unknown',
+    email: 'AMINA@EXAMPLE.TEST',
+    division: 'Dhaka',
+    district: 'Gazipur',
+    upazila: 'Kaliganj',
+    addressLine: 'House 7, Road 2, Test Village',
+    postalCode: '1720',
+    emergencyContact: { name: 'Test Guardian', relationship: 'Guardian', mobile: '01912345678' },
+    chiefComplaint: 'Review after exercise\nOccasional discomfort',
+    allergyStatus: 'known',
+    allergies: 'Penicillin (reported)',
+    medicalHistory: 'Previously treated hypertension',
+    currentMedications: 'Medication details recorded by staff',
+    clinicalNotes: 'Disposable registration fixture',
+  };
+  it('persists and returns all expanded fields without nested MongoDB identifiers', async () => {
+    const d = await DoctorModel.create(doctor);
+    const saved = await write('post', `/doctors/${d.id}/patients`, expanded);
+    expect(saved.status).toBe(201);
+    const record = (await read(`/patients/${saved.body.data.patient.id}`)).body.data.patient;
+    expect(record).toMatchObject({
+      ...expanded,
+      email: 'amina@example.test',
+      emergencyContact: { ...expanded.emergencyContact, mobile: '+8801912345678' },
+    });
+    expect(record.emergencyContact._id).toBeUndefined();
+    expect(record.nameKey).toBeUndefined();
+    expect(record.searchTokens).toBeUndefined();
+    expect(record.doctorId).toBe(d.id);
+    const directory = (await read('/patients')).body.data.items[0];
+    expect(directory.mobile).toBe(input.mobile);
+    for (const key of [
+      'emergencyContact',
+      'addressLine',
+      'allergies',
+      'medicalHistory',
+      'currentMedications',
+      'clinicalNotes',
+      'email',
+    ])
+      expect(directory[key]).toBeUndefined();
+  });
+  it('updates every expanded field and clears optional data with explicit nulls', async () => {
+    const { p } = await fixture();
+    const changed = await write('patch', `/patients/${p}`, {
+      ...expanded,
+      dateOfBirth: null,
+      approximateAge: { value: 31, unit: 'years' },
+      emergencyContact: {
+        name: 'Other contact',
+        relationship: 'Other',
+        relationshipOther: 'Neighbour',
+        mobile: '+8801812345678',
+      },
+    });
+    expect(changed.status).toBe(200);
+    expect(changed.body.data.patient).toMatchObject({
+      nameBangla: expanded.nameBangla,
+      approximateAge: { value: 31, unit: 'years' },
+      dateOfBirth: null,
+      emergencyContact: { relationshipOther: 'Neighbour' },
+    });
+    const optional = Object.fromEntries(
+      Object.keys(expanded)
+        .filter((key) => !['name', 'condition', 'gender', 'mobile'].includes(key))
+        .map((key) => [key, null]),
+    );
+    const cleared = await write('patch', `/patients/${p}`, optional);
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.data.patient).toMatchObject(optional);
+    expect(cleared.body.data.patient.name).toBe(input.name);
+  });
+  it('reads and edits original minimal records without invented clinical or personal information', async () => {
+    const d = await DoctorModel.create(doctor);
+    const legacy = await PatientModel.create({
+      name: 'Legacy Patient',
+      condition: 'Review',
+      doctorId: d.id,
+    });
+    const found = await read(`/patients/${legacy.id}`);
+    expect(found.status).toBe(200);
+    expect(Object.keys(found.body.data.patient).sort()).toEqual(
+      ['id', 'name', 'condition', 'doctorId', 'doctor', 'createdAt', 'updatedAt'].sort(),
+    );
+    expect(
+      (await write('patch', `/patients/${legacy.id}`, { condition: 'Legacy follow-up' })).status,
+    ).toBe(200);
+    expect((await PatientModel.findById(legacy.id))?.dateOfBirth).toBeUndefined();
+    expect((await read(`/doctors/${d.id}/patients`)).body.data.items[0].id).toBe(legacy.id);
+  });
+  it.each(['mobile', 'gender', 'dateOfBirth'] as const)(
+    'requires %s for new registrations',
+    async (key) => {
+      const d = await DoctorModel.create(doctor);
+      const incomplete: Record<string, unknown> = { ...input };
+      delete incomplete[key];
+      expect((await write('post', `/doctors/${d.id}/patients`, incomplete)).status).toBe(422);
+    },
+  );
+  it.each(['01712345678', '+8801712345678', '8801712345678', '+880 (1712) 345-678', '০১৭১২৩৪৫৬৭৮'])(
+    'normalizes Bangladesh mobile %s',
+    async (mobile) => {
+      const d = await DoctorModel.create(doctor);
+      const result = await write('post', `/doctors/${d.id}/patients`, { ...input, mobile });
+      expect(result.status).toBe(201);
+      expect(result.body.data.patient.mobile).toBe('+8801712345678');
+    },
+  );
+  it('accepts explicit international contact numbers without changing doctor landline support', async () => {
+    const d = await DoctorModel.create({ ...doctor, phone: '02-55165000' });
+    const result = await write('post', `/doctors/${d.id}/patients`, {
+      ...input,
+      mobile: '+44 7700 900123',
+    });
+    expect(result.status).toBe(201);
+    expect(result.body.data.patient.mobile).toBe('+447700900123');
+    expect(d.phone).toBe('02-55165000');
+  });
+  it.each([
+    '0171234567',
+    '017123456789',
+    '01212345678',
+    '+8801212345678',
+    '+880171234567',
+    '+8802712345678',
+    'abc01712345678',
+    '1234567',
+    '+1234567890123456',
+  ])('rejects invalid mobile %s', async (mobile) => {
+    const d = await DoctorModel.create(doctor);
+    expect((await write('post', `/doctors/${d.id}/patients`, { ...input, mobile })).status).toBe(
+      422,
+    );
+  });
+  it('accepts all eight blood groups and Unknown, rejecting arbitrary values', async () => {
+    const { p } = await fixture();
+    expect(BLOOD_GROUPS).toHaveLength(9);
+    for (const bloodGroup of BLOOD_GROUPS)
+      expect(
+        (await write('patch', `/patients/${p}`, { bloodGroup })).body.data.patient.bloodGroup,
+      ).toBe(bloodGroup);
+    expect((await write('patch', `/patients/${p}`, { bloodGroup: 'X+' })).status).toBe(422);
+  });
+  it.each([
+    { gender: 'invalid' },
+    { division: 'Imaginary', district: 'Dhaka' },
+    { division: 'Dhaka', district: 'Sylhet' },
+    { division: 'Dhaka', district: null },
+    { division: null, district: 'Dhaka' },
+    { emergencyContact: { name: 'Contact', relationship: 'Friend', mobile: '01712345678' } },
+    {
+      emergencyContact: {
+        name: 'Contact',
+        relationship: 'Parent',
+        mobile: '01712345678',
+        relationshipOther: 'Other',
+      },
+    },
+    { emergencyContact: { name: 'Contact', relationship: 'Parent', mobile: 'bad' } },
+    { dateOfBirth: '2026-02-30', approximateAge: null },
+    { dateOfBirth: '2999-01-01', approximateAge: null },
+    { dateOfBirth: '1899-12-31', approximateAge: null },
+    { dateOfBirth: null, approximateAge: { value: -1, unit: 'years' } },
+    { dateOfBirth: null, approximateAge: { value: 121, unit: 'years' } },
+    { dateOfBirth: null, approximateAge: { value: 5, unit: 'weeks' } },
+    { dateOfBirth: '1990-01-01', approximateAge: { value: 30, unit: 'years' } },
+    { allergyStatus: 'none-known', allergies: 'Penicillin' },
+    { allergyStatus: 'known', allergies: null },
+    { postalCode: '12' },
+    { email: 'not email' },
+    { clinicalNotes: 'x'.repeat(2001) },
+  ])('validates demographic and clinical selections %j', async (invalid) => {
+    const { p } = await fixture();
+    expect((await write('patch', `/patients/${p}`, invalid)).status).toBe(422);
+  });
+  it('validates all 64 districts against their real division and rejects forged option names', async () => {
+    expect(Object.keys(BANGLADESH_DISTRICTS)).toHaveLength(8);
+    expect(Object.values(BANGLADESH_DISTRICTS).flat()).toHaveLength(64);
+    for (const [division, districts] of Object.entries(BANGLADESH_DISTRICTS))
+      for (const district of districts)
+        expect(patientInputSchema.safeParse({ ...input, division, district }).success).toBe(true);
+    expect(
+      patientInputSchema.safeParse({ ...input, division: 'Dhaka', district: 'Sylhet' }).success,
+    ).toBe(false);
+  });
+  it('stores approximate age without fabricating DOB and calculates age against Bangladesh calendar dates', async () => {
+    const d = await DoctorModel.create(doctor);
+    const result = await write('post', `/doctors/${d.id}/patients`, {
+      ...input,
+      dateOfBirth: null,
+      approximateAge: { value: 6, unit: 'months' },
+    });
+    expect(result.status).toBe(201);
+    expect(result.body.data.patient.dateOfBirth).toBeNull();
+    expect(result.body.data.patient.approximateAge).toEqual({ value: 6, unit: 'months' });
+    expect(patientAgeLabel(result.body.data.patient)).toBe('Approximately 6 months');
+    expect(patientAgeLabel({ dateOfBirth: '2000-11-08' }, new Date('2026-11-07T19:00:00Z'))).toBe(
+      '26 years',
+    );
+    expect(patientAgeLabel({ dateOfBirth: '2026-11-01' }, new Date('2026-11-07T19:00:00Z'))).toBe(
+      '7 days',
+    );
+    expect(patientAgeLabel({})).toBe('Age not recorded');
+  });
+  it('updates coupled data atomically while preserving unrelated concurrent medical edits', async () => {
+    const { p } = await fixture();
+    for (const update of [
+      { division: 'Dhaka' },
+      { dateOfBirth: null },
+      { allergyStatus: 'unknown' },
+    ])
+      expect((await write('patch', `/patients/${p}`, update)).status).toBe(422);
+    const writes = await Promise.all([
+      write('patch', `/patients/${p}`, { division: 'Dhaka', district: 'Gazipur' }),
+      write('patch', `/patients/${p}`, { medicalHistory: 'Concurrent history' }),
+      write('patch', `/patients/${p}`, { allergyStatus: 'none-known', allergies: null }),
+    ]);
+    expect(writes.map((r) => r.status)).toEqual([200, 200, 200]);
+    expect((await read(`/patients/${p}`)).body.data.patient).toMatchObject({
+      division: 'Dhaka',
+      district: 'Gazipur',
+      medicalHistory: 'Concurrent history',
+      allergyStatus: 'none-known',
+      allergies: null,
+    });
+  });
+  it('uses schema validation on direct model writes while allowing legacy fields to be absent', async () => {
+    const d = await DoctorModel.create(doctor);
+    await expect(
+      PatientModel.create({ ...input, doctorId: d.id, bloodGroup: 'X+' as never }),
+    ).rejects.toThrow();
+    await expect(
+      PatientModel.create({ ...input, doctorId: d.id, division: 'Dhaka', district: 'Sylhet' }),
+    ).rejects.toThrow();
+    const legacy = await PatientModel.create({
+      name: 'Legacy record',
+      condition: 'Review',
+      doctorId: d.id,
+    });
+    expect(legacy.mobile).toBeUndefined();
+  });
+  it('keeps personal and clinical text out of failed-request logs and error responses', async () => {
+    const { p } = await fixture();
+    const log = vi.spyOn(logger, 'error');
+    const query = vi.spyOn(PatientModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+      throw new Error('PRIVATE clinical history +8801712345678');
+    });
+    try {
+      const result = await write('patch', `/patients/${p}`, {
+        clinicalNotes: 'PRIVATE clinical history +8801712345678',
+      });
+      expect(result.status).toBe(500);
+      expect(log).toHaveBeenCalledWith({ event: 'request_failed', requestId: expect.any(String) });
+      expect(JSON.stringify(log.mock.calls)).not.toContain('PRIVATE');
+      expect(JSON.stringify(result.body)).not.toContain('PRIVATE');
+      expect(JSON.stringify(result.body)).not.toContain('+8801712345678');
+    } finally {
+      query.mockRestore();
+      log.mockRestore();
+    }
+  });
+  it('accepts bounded multilingual clinical fields over16kb while keeping unrelated endpoints at16kb', async () => {
+    const d = await DoctorModel.create(doctor);
+    const text = 'রোগী';
+    const large = {
+      ...input,
+      chiefComplaint: text.repeat(200),
+      allergyStatus: 'known',
+      allergies: text.repeat(200),
+      medicalHistory: text.repeat(400),
+      currentMedications: text.repeat(200),
+      clinicalNotes: text.repeat(400),
+    };
+    expect(Buffer.byteLength(JSON.stringify(large))).toBeGreaterThan(16 * 1024);
+    const result = await write('post', `/doctors/${d.id}/patients`, large);
+    expect(result.status).toBe(201);
+    expect(result.body.data.patient.clinicalNotes).toBe(large.clinicalNotes);
+    expect((await write('patch', `/patients/${result.body.data.patient.id}`, large)).status).toBe(
+      200,
+    );
+    const unrelated = await write('post', '/doctors', {
+      ...doctor,
+      hospital: large.medicalHistory.repeat(4),
+    });
+    expect(unrelated.status).toBe(413);
+  });
+  it('rejects oversized patient requests without echoing private body contents', async () => {
+    const { d, p } = await fixture();
+    const oversized = { clinicalNotes: 'PRIVATE'.repeat(10000) };
+    for (const [method, path] of [
+      ['post', `/doctors/${d}/patients`],
+      ['patch', `/patients/${p}`],
+    ] as const) {
+      const result = await write(method, path, oversized);
+      expect(result.status).toBe(413);
+      expect(result.body.error.code).toBe('PAYLOAD_TOO_LARGE');
+      expect(JSON.stringify(result.body)).not.toContain('PRIVATE');
+    }
+    expect((await PatientModel.findById(p))?.clinicalNotes).toBeUndefined();
   });
 });

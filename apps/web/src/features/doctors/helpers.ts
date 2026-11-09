@@ -5,7 +5,7 @@ export const doctorDate = (value: string) =>
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    timeZone: 'UTC',
+    timeZone: 'Asia/Dhaka',
   }).format(new Date(value));
 export function directoryReturn(value: string | null): string {
   if (!value) return '/doctors';

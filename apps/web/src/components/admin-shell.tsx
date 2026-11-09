@@ -2,21 +2,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  ArrowUpRight,
-  ChartNoAxesCombined,
-  LogOut,
-  Menu,
-  Stethoscope,
-  UsersRound,
-  X,
-} from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, Stethoscope, UsersRound, X } from 'lucide-react';
 import type { AdminIdentity, AuthResponse } from '@doctor-tracker/shared';
 import { api, ApiError } from '../lib/api';
 import { Brand } from './brand';
 
 const links = [
-  { href: '/dashboard', label: 'Dashboard', icon: ChartNoAxesCombined },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
   { href: '/patients', label: 'Patients', icon: UsersRound },
 ];
@@ -170,7 +162,7 @@ export function AdminShell({
           <X />
         </button>
         <div className="sidebar-brand">
-          <Brand inverse />
+          <Brand />
         </div>
         <nav id="admin-navigation" aria-label="Workspace navigation">
           {links.map((item) => (
@@ -183,7 +175,6 @@ export function AdminShell({
             >
               <item.icon size={19} />
               {item.label}
-              {currentLink?.href === item.href && <span className="nav-dot" />}
             </Link>
           ))}
         </nav>
@@ -201,14 +192,6 @@ export function AdminShell({
         </div>
       </aside>
       <div className="admin-main" inert={menu}>
-        <div className="admin-topbar">
-          <p>
-            Workspace <span>/</span> {currentLink?.label}
-          </p>
-          <Link href="/">
-            Doctor Tracker <ArrowUpRight size={14} />
-          </Link>
-        </div>
         <main id="main" className="admin-page">
           {error && (
             <p className="form-error" role="alert">
@@ -217,10 +200,6 @@ export function AdminShell({
           )}
           {children}
         </main>
-        <footer className="admin-footer">
-          <span>Doctor Tracker</span>
-          <span>Administrative registry</span>
-        </footer>
       </div>
     </div>
   );

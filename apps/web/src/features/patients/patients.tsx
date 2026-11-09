@@ -7,6 +7,7 @@ import {
   doctorIdSchema,
   patientIdSchema,
   patientQuerySchema,
+  formatBangladeshPhone,
   type Doctor,
   type Patient,
   type PatientDirectory,
@@ -16,6 +17,8 @@ import { useDoctorQuery as useRecordQuery } from '../doctors/use-doctor-query';
 import { doctorDate } from '../doctors/helpers';
 import { DoctorPicker, RecordState, PatientRecords, Pages, DeletePatient } from './components';
 import { PatientForm } from './patient-form';
+import { ageLabel, birthDateLabel, genderLabels } from './helpers';
+import './patients.css';
 function returnPath(value: string | null, fallback = '/patients') {
   if (!value || !/^\/(?:patients(?:\/[^/?#]+)?|doctors\/[a-f\d]{24})(?:\?|$)/i.test(value))
     return fallback;
@@ -56,9 +59,7 @@ export function PatientDirectoryPage() {
     <div className="doctors-feature">
       <div className="doctor-page-heading">
         <div>
-          <p className="eyebrow">PATIENT REGISTRY</p>
           <h1>Patients</h1>
-          <p>Patient records and their assigned doctors.</p>
         </div>
         <Link className="button" href={`/patients/new?returnTo=${encodeURIComponent(back)}`}>
           <Plus size={18} />
@@ -76,7 +77,6 @@ export function PatientDirectoryPage() {
             placeholder="Patient name or condition"
             onChange={(e) => change('q', e.target.value, true)}
           />
-          <p className="field-hint">Search word prefixes. Combine up to five words.</p>
         </div>
         <div className="field">
           <label htmlFor="patient-sort">Sort by</label>
@@ -178,8 +178,10 @@ export function DoctorPatients({ doctor }: { doctor: Doctor }) {
   const params = useSearchParams();
   const raw = params.toString();
   const page = Number(params.get('patientPage') ?? 1);
+  const search = params.get('patientQ') ?? '';
   const query = useRecordQuery<PatientDirectory>(
-    `/doctors/${doctor.id}/patients?page=${Number.isSafeInteger(page) && page > 0 ? page : 0}&limit=10`,
+    `/doctors/${doctor.id}/patients?${new URLSearchParams({ page: String(Number.isSafeInteger(page) && page > 0 ? page : 0), limit: '10', ...(search ? { q: search } : {}) })}`,
+    300,
   );
   const back = `/doctors/${doctor.id}${raw ? `?${raw}` : ''}`;
   return (
@@ -192,7 +194,6 @@ export function DoctorPatients({ doctor }: { doctor: Doctor }) {
       <div className="record-section-heading">
         <div>
           <h2>Patients{query.data ? ` (${query.data.pagination.totalItems})` : ''}</h2>
-          <p>Assigned to {doctor.name}</p>
         </div>
         <div className="record-actions">
           <Link className="quiet-link" href={`/patients?doctorId=${doctor.id}`}>
@@ -205,6 +206,27 @@ export function DoctorPatients({ doctor }: { doctor: Doctor }) {
             Add patient
           </Link>
         </div>
+      </div>
+      <div className="field doctor-patient-search">
+        <label htmlFor="assigned-patient-search">Search assigned patients</label>
+        <input
+          id="assigned-patient-search"
+          type="search"
+          value={search}
+          maxLength={120}
+          placeholder="Patient name or condition"
+          onChange={(event) => {
+            const next = new URLSearchParams(window.location.search);
+            next.delete('patientPage');
+            if (event.target.value) next.set('patientQ', event.target.value);
+            else next.delete('patientQ');
+            window.history.replaceState(
+              null,
+              '',
+              `/doctors/${doctor.id}${next.size ? `?${next}` : ''}`,
+            );
+          }}
+        />
       </div>
       <RecordState loading={query.loading} error={query.error} retry={query.retry} />
       {query.data && (
@@ -257,16 +279,10 @@ export function PatientEditorPage({
     );
   if (patientId && !record.data) return null;
   return (
-    <div className="doctors-feature doctor-editor">
+    <div className="doctors-feature patient-editor">
       <div className="doctor-page-heading">
         <div>
-          <p className="eyebrow">PATIENT RECORD</p>
           <h1>{patientId ? 'Edit patient' : 'Add patient'}</h1>
-          <p>
-            {patientId
-              ? 'Update the name or condition.'
-              : 'Enter patient details and confirm their doctor.'}
-          </p>
         </div>
       </div>
       <PatientForm
@@ -310,10 +326,21 @@ export function PatientDetailPage({ patientId }: { patientId: string }) {
               Patient updated.
             </p>
           )}
-          <div className="doctor-page-heading">
+          <div className="doctor-page-heading patient-profile-heading">
             <div>
-              <p className="eyebrow">PATIENT RECORD</p>
               <h1 className="doctor-detail-name">{p.name}</h1>
+              {p.nameBangla && (
+                <p className="patient-bangla-name" lang="bn">
+                  {p.nameBangla}
+                </p>
+              )}
+              <div className="patient-identity-line">
+                {ageLabel(p) && <span>{ageLabel(p)}</span>}
+                {p.gender && <span>{genderLabels[p.gender]}</span>}
+                {p.bloodGroup && (
+                  <span className="patient-blood-group">Blood group: {p.bloodGroup}</span>
+                )}
+              </div>
             </div>
             <div className="record-actions">
               <Link
@@ -327,28 +354,130 @@ export function PatientDetailPage({ patientId }: { patientId: string }) {
               </button>
             </div>
           </div>
-          <section className="doctor-detail-panel" aria-label="Patient details">
-            <dl className="doctor-detail-grid">
-              <div>
-                <dt>Condition</dt>
-                <dd>{p.condition}</dd>
-              </div>
-              <div>
-                <dt>Assigned doctor</dt>
-                <dd>
-                  <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
-                </dd>
-              </div>
-              <div>
-                <dt>Added (UTC)</dt>
-                <dd>{doctorDate(p.createdAt)}</dd>
-              </div>
-              <div>
-                <dt>Updated (UTC)</dt>
-                <dd>{doctorDate(p.updatedAt)}</dd>
-              </div>
-            </dl>
-          </section>
+          <div className="patient-record-layout">
+            <section className="patient-clinical-section" aria-label="Patient medical details">
+              <h2>Medical information</h2>
+              <dl className="patient-clinical-list">
+                <div>
+                  <dt>Condition</dt>
+                  <dd className="patient-primary-condition">{p.condition}</dd>
+                </div>
+                {p.chiefComplaint && (
+                  <div>
+                    <dt>Symptoms / chief complaint</dt>
+                    <dd>{p.chiefComplaint}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Allergies</dt>
+                  <dd>
+                    {p.allergyStatus === 'known'
+                      ? p.allergies
+                      : p.allergyStatus === 'none-known'
+                        ? 'No known allergies'
+                        : p.allergyStatus === 'unknown'
+                          ? 'Unknown'
+                          : 'Not recorded'}
+                  </dd>
+                </div>
+                {p.medicalHistory && (
+                  <div>
+                    <dt>Medical history</dt>
+                    <dd>{p.medicalHistory}</dd>
+                  </div>
+                )}
+                {p.currentMedications && (
+                  <div>
+                    <dt>Current medications</dt>
+                    <dd>{p.currentMedications}</dd>
+                  </div>
+                )}
+                {p.clinicalNotes && (
+                  <div>
+                    <dt>Additional notes</dt>
+                    <dd>{p.clinicalNotes}</dd>
+                  </div>
+                )}
+              </dl>
+            </section>
+            <aside className="patient-record-aside" aria-label="Patient contact and doctor">
+              <section>
+                <h2>Contact & personal details</h2>
+                <dl className="patient-contact-list">
+                  {p.dateOfBirth && (
+                    <div>
+                      <dt>Date of birth</dt>
+                      <dd>{birthDateLabel(p.dateOfBirth)}</dd>
+                    </div>
+                  )}
+                  {!p.dateOfBirth && !p.approximateAge && (
+                    <div>
+                      <dt>Age</dt>
+                      <dd>Not recorded</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt>Mobile</dt>
+                    <dd>
+                      {p.mobile ? (
+                        <a href={`tel:${p.mobile}`}>{formatBangladeshPhone(p.mobile)}</a>
+                      ) : (
+                        'Not recorded'
+                      )}
+                    </dd>
+                  </div>
+                  {p.email && (
+                    <div>
+                      <dt>Email</dt>
+                      <dd>
+                        <a href={`mailto:${p.email}`}>{p.email}</a>
+                      </dd>
+                    </div>
+                  )}
+                  {[p.addressLine, p.upazila, p.district, p.division, p.postalCode].some(
+                    Boolean,
+                  ) && (
+                    <div>
+                      <dt>Address</dt>
+                      <dd>
+                        {[p.addressLine, p.upazila, p.district, p.division, p.postalCode]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
+              {p.emergencyContact && (
+                <section>
+                  <h2>Emergency contact</h2>
+                  <p className="patient-contact-name">{p.emergencyContact.name}</p>
+                  <p>
+                    {p.emergencyContact.relationship}
+                    {p.emergencyContact.relationshipOther
+                      ? ` · ${p.emergencyContact.relationshipOther}`
+                      : ''}
+                  </p>
+                  <a href={`tel:${p.emergencyContact.mobile}`}>
+                    {formatBangladeshPhone(p.emergencyContact.mobile)}
+                  </a>
+                </section>
+              )}
+              <section className="patient-record-doctor">
+                <h2>Assigned doctor</h2>
+                <Link href={`/doctors/${p.doctorId}`}>{p.doctor.name}</Link>
+                {p.doctor.specialization && <p>{p.doctor.specialization}</p>}
+              </section>
+            </aside>
+          </div>
+          <div className="patient-record-dates">
+            <span>
+              Added <time dateTime={p.createdAt}>{doctorDate(p.createdAt)}</time>
+            </span>
+            <span>
+              Updated <time dateTime={p.updatedAt}>{doctorDate(p.updatedAt)}</time>
+            </span>
+          </div>
           {remove && (
             <DeletePatient
               patient={p}

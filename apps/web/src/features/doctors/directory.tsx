@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Plus, Search, Stethoscope, X } from 'lucide-react';
 import type { DoctorDirectory, DoctorOptions } from '@doctor-tracker/shared';
-import { doctorSortSchema } from '@doctor-tracker/shared';
+import { doctorSortSchema, formatBangladeshPhone } from '@doctor-tracker/shared';
 import { useDoctorQuery } from './use-doctor-query';
 import { doctorDate } from './helpers';
 import { DoctorLoading, DoctorQueryError } from './query-state';
@@ -54,9 +54,7 @@ export function DoctorDirectoryPage() {
     <div className="doctors-feature">
       <div className="doctor-page-heading">
         <div>
-          <p className="eyebrow">DOCTOR REGISTRY</p>
           <h1>Doctors</h1>
-          <p>Practice details and patient records.</p>
         </div>
         <Link className="button" href={`/doctors/new?returnTo=${encodeURIComponent(returnTo)}`}>
           <Plus size={17} /> Add Doctor
@@ -76,7 +74,6 @@ export function DoctorDirectoryPage() {
               onChange={(event) => change('q', event.target.value, true)}
             />
           </div>
-          <p className="field-hint">Search word prefixes. Combine words to narrow results.</p>
         </div>
         <div className="doctor-sort field">
           <label htmlFor="doctor-sort">Sort by</label>
@@ -184,17 +181,14 @@ export function DoctorDirectoryPage() {
             <>
               <div className="doctor-table-wrap">
                 <table className="doctor-table">
-                  <caption className="sr-only">Doctors directory. Dates are shown in UTC.</caption>
+                  <caption className="sr-only">Doctors directory</caption>
                   <thead>
                     <tr>
                       <th scope="col">Doctor</th>
                       <th scope="col">Specialization</th>
                       <th scope="col">Hospital</th>
-                      <th scope="col">Contact</th>
-                      <th scope="col">Added</th>
-                      <th scope="col">
-                        <span className="sr-only">Details</span>
-                      </th>
+                      <th scope="col">Phone</th>
+                      <th scope="col">Email</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,23 +199,17 @@ export function DoctorDirectoryPage() {
                             {doctor.name}
                           </Link>
                         </td>
-                        <td>{doctor.specialization}</td>
+                        <td>
+                          <span className="specialization-tag">{doctor.specialization}</span>
+                        </td>
                         <td>{doctor.hospital}</td>
                         <td className="doctor-contact">
-                          <span>{doctor.phone}</span>
-                          <span>{doctor.email}</span>
+                          <a href={`tel:${doctor.phone.replace(/[^\d+]/g, '')}`}>
+                            {formatBangladeshPhone(doctor.phone)}
+                          </a>
                         </td>
-                        <td>
-                          <time dateTime={doctor.createdAt}>{doctorDate(doctor.createdAt)}</time>
-                        </td>
-                        <td>
-                          <Link
-                            href={details(doctor.id)}
-                            className="doctor-details-action"
-                            aria-label={`View ${doctor.name}`}
-                          >
-                            <ArrowUpRight size={17} />
-                          </Link>
+                        <td className="doctor-contact">
+                          <a href={`mailto:${doctor.email}`}>{doctor.email}</a>
                         </td>
                       </tr>
                     ))}
@@ -251,7 +239,7 @@ export function DoctorDirectoryPage() {
                       </div>
                       <div>
                         <dt>Phone</dt>
-                        <dd>{doctor.phone}</dd>
+                        <dd>{formatBangladeshPhone(doctor.phone)}</dd>
                       </div>
                       <div>
                         <dt>Email</dt>
@@ -321,20 +309,22 @@ function OptionFilter({
         onFocus={() => setRequested(true)}
         onChange={(event) => change(event.target.value)}
         autoComplete="off"
-        aria-describedby={`hint-${field}`}
+        aria-describedby={options.error || options.data?.hasMore ? `hint-${field}` : undefined}
       />
       <datalist id={`doctor-options-${field}`}>
         {options.data?.values.map((option) => (
           <option key={option} value={option} />
         ))}
       </datalist>
-      <p id={`hint-${field}`} className="field-hint">
-        {options.error
-          ? 'Suggestions unavailable. Enter an exact value.'
-          : options.data?.hasMore
-            ? 'Type to find more suggestions. Exact match.'
-            : 'Exact match · type for suggestions'}
-      </p>
+      {(options.error || options.data?.hasMore) && (
+        <p id={`hint-${field}`} className="field-hint">
+          {options.error
+            ? 'Suggestions unavailable. Enter an exact value.'
+            : options.data?.hasMore
+              ? 'Type to find more suggestions. Exact match.'
+              : 'Exact match · type for suggestions'}
+        </p>
+      )}
     </div>
   );
 }

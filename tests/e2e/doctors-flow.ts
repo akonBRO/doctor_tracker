@@ -34,7 +34,7 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await expect(page.getByText('Enter doctor name.', { exact: true })).toBeVisible();
   await page.getByLabel('Doctor name', { exact: false }).fill('Dr. Nadia Rahman');
   await page.getByLabel('Specialization', { exact: false }).fill('Cardiology');
-  await page.getByLabel('Hospital', { exact: false }).fill('City Medical Center');
+  await page.getByLabel('Hospital', { exact: false }).fill('Dhaka Medical College Hospital');
   await page.getByLabel('Phone', { exact: false }).fill('+880 (1712) 345-678');
   await page.getByLabel('Email', { exact: false }).fill('nadia@example.test');
   await page.route('**/api/v1/auth/me', (route) =>
@@ -96,15 +96,16 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
     .collection('doctors')
     .findOne({ name: 'Dr. Nadia Rahman' });
   expect(firstRecord).not.toBeNull();
+  expect(firstRecord!.phone).toBe('+8801712345678');
   const createdDate = (firstRecord!.createdAt as Date).toISOString().slice(0, 10);
   const csrf = (await (await page.request.get('/api/v1/auth/csrf')).json()).data.token as string;
   for (let i = 1; i <= 10; i++) {
     const result = await page.request.post('/api/v1/doctors', {
-      headers: { Origin: 'http://localhost:3000', 'X-CSRF-Token': csrf },
+      headers: { Origin: 'http://127.0.0.1:3100', 'X-CSRF-Token': csrf },
       data: {
         name: `Dr. Elias Noor ${String(i).padStart(2, '0')}`,
         specialization: 'Neurology',
-        hospital: 'North Hospital',
+        hospital: 'Rangpur Medical College Hospital',
         phone: '+44 20 7946 0958',
         email: `reviewer-${i}@example.test`,
       },
@@ -126,7 +127,7 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await expect(page.getByText('Page 1 of 1', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Dr. Nadia Rahman', exact: true })).toBeVisible();
   await page.getByLabel('Specialization', { exact: true }).fill('Cardiology');
-  await page.getByLabel('Hospital', { exact: true }).fill('City Medical Center');
+  await page.getByLabel('Hospital', { exact: true }).fill('Dhaka Medical College Hospital');
   await page.getByLabel('Added from (UTC)', { exact: true }).fill(createdDate);
   await page.getByLabel('Added through (UTC)', { exact: true }).fill(createdDate);
   await expect(page.getByText('1–1 of 1 doctors', { exact: true })).toBeVisible();
@@ -134,7 +135,7 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await page.reload();
   await expect(page.getByLabel('Search doctors', { exact: true })).toHaveValue('RAH');
   await expect(page.getByText('1–1 of 1 doctors', { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: 'View Dr. Nadia Rahman', exact: true }).click();
+  await page.getByRole('link', { name: 'Dr. Nadia Rahman', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Dr. Nadia Rahman' })).toBeVisible();
   await page.getByRole('link', { name: 'Back to doctors', exact: true }).click();
   await expect(page).toHaveURL(filteredUrl);
@@ -213,11 +214,11 @@ export async function doctorsFlow(page: Page, info: TestInfo, database: MongoCli
   await expect(page.getByRole('heading', { name: 'Doctor not found', exact: true })).toBeVisible();
   const xss = '<img src=x onerror=alert(1)>';
   const literal = await page.request.post('/api/v1/doctors', {
-    headers: { Origin: 'http://localhost:3000', 'X-CSRF-Token': csrf },
+    headers: { Origin: 'http://127.0.0.1:3100', 'X-CSRF-Token': csrf },
     data: {
       name: xss,
       specialization: 'Neurology',
-      hospital: 'North Hospital',
+      hospital: 'Rangpur Medical College Hospital',
       phone: '+44 20 7946 0958',
       email: 'literal@example.test',
     },

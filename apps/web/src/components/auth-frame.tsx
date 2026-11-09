@@ -12,7 +12,6 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
       <main id="main" className="auth-content">
         {children}
       </main>
-      <footer className="auth-footer">Doctor Tracker / Administrator access</footer>
     </div>
   );
 }

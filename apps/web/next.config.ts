@@ -3,6 +3,7 @@ const apiOrigin = process.env.API_ORIGIN ?? 'http://127.0.0.1:4000';
 if (new URL(apiOrigin).origin !== apiOrigin || !/^https?:\/\//.test(apiOrigin))
   throw new Error('API_ORIGIN must be an HTTP(S) origin.');
 const config: NextConfig = {
+  distDir: process.env.E2E_WEB_MODE === 'development' ? '.next-e2e' : '.next',
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   async rewrites() {

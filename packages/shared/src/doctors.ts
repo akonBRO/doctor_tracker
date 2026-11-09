@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeBangladeshPhone } from './bangladesh.js';
 
 export const normalizeDoctorText = (value: string) =>
   value.trim().normalize('NFKC').replace(/\s+/gu, ' ');
@@ -38,7 +39,14 @@ export const doctorInputSchema = z.strictObject({
         (value.match(/\d/g)?.length ?? 0) <= 15 &&
         (value.match(/\(/g)?.length ?? 0) === (value.match(/\)/g)?.length ?? 0),
       'Enter 7–15 digits, with an optional country code and spaces, brackets, dots or hyphens.',
-    ),
+    )
+    .refine((value) => {
+      const compact = value.replace(/[ ().-]/g, '');
+      // New local 01 contacts are Bangladesh mobiles. Preserve landlines and other country codes.
+      // Also catch a duplicated domestic trunk zero after +880 rather than accepting a malformed mobile.
+      return !/^(?:01|\+?8800?1)/.test(compact) || /^(?:\+?88)?01[3-9]\d{8}$/.test(compact);
+    }, 'Enter a valid Bangladesh mobile number, such as 01712345678 or +8801712345678.')
+    .transform(normalizeBangladeshPhone),
   email: z
     .string()
     .trim()

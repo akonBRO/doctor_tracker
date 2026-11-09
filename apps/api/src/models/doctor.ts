@@ -42,6 +42,8 @@ const schema = new Schema(
 );
 
 schema.pre('validate', function () {
+  const phone = doctorInputSchema.shape.phone.safeParse(this.phone);
+  if (phone.success) this.phone = phone.data;
   for (const key of ['name', 'specialization', 'hospital'] as const) {
     const parsed = doctorInputSchema.shape[key].safeParse(this[key]);
     if (!parsed.success) this.invalidate(key, parsed.error.issues[0]!.message);

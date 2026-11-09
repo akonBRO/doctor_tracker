@@ -4,12 +4,13 @@ import { connectDatabase } from '../apps/api/src/config/database.js';
 import { loadConfig } from '../apps/api/src/config/env.js';
 import { createApp } from '../apps/api/src/app.js';
 import { randomToken } from '../apps/api/src/utils/security.js';
+import { createServer } from 'node:http';
 
 const database = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
 const config = loadConfig({
   NODE_ENV: 'test',
   MONGODB_URI: database.getUri(),
-  WEB_ORIGIN: 'http://localhost:3000',
+  WEB_ORIGIN: 'http://127.0.0.1:3100',
   JWT_SECRET: randomToken(),
   MFA_ENCRYPTION_KEY: randomToken(),
   CSRF_SECRET: randomToken(),
@@ -17,8 +18,14 @@ const config = loadConfig({
 });
 await connectDatabase(config);
 const app = await createApp(config);
-const server = app.listen(4000, '127.0.0.1', () => {
-  process.send?.({ uri: database.getUri() });
+const fixtureId = randomToken();
+const server = createServer((request, response) => {
+  // Test-only process identity proves the browser proxy reaches this disposable fixture.
+  response.setHeader('X-Doctor-Tracker-E2E', fixtureId);
+  app(request, response);
+});
+server.listen(4100, '127.0.0.1', () => {
+  process.send?.({ uri: database.getUri(), fixtureId });
 });
 server.on('error', () => {
   void shutdown(1);

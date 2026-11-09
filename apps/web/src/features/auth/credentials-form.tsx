@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { loginSchema, signupSchema, type AuthStep } from '@doctor-tracker/shared';
 import { api, ApiError } from '../../lib/api';
 
@@ -64,42 +64,21 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
   if (signup && !/^[a-f0-9]{64}$/.test(invitation))
     return (
       <div className="invite-message">
-        <span className="form-icon">
-          <KeyRound size={25} />
-        </span>
         <h1>Create your account</h1>
-        <p>
-          Doctor Tracker is a private administrative workspace. You’ll need an invitation from your
-          administrator to create an account.
-        </p>
-        <div className="invite-explainer">
-          <Mail size={20} />
-          <div>
-            <strong>Already invited?</strong>
-            <p>
-              Open the invitation link shared with you. Each link is personal, expires after 24
-              hours, and can be used once.
-            </p>
-          </div>
-        </div>
+        <p>Open your invitation link to register, or ask your administrator for access.</p>
         <Link className="button full-width" href="/login">
-          Already have an account? Log in <ArrowRight size={17} />
+          Log in <ArrowRight size={17} />
         </Link>
-        <p className="small muted">Need access? Contact the person who manages your workspace.</p>
       </div>
     );
   return (
     <>
       <h1>{signup ? 'Create your account' : 'Log in'}</h1>
-      <p className="form-description">
-        {signup
-          ? 'Enter your details to accept your invitation.'
-          : 'Sign in to your Doctor Tracker workspace.'}
-      </p>
+      <p className="form-description">{signup ? 'Accept your invitation.' : 'Welcome back.'}</p>
       {signup && (
         <div className="onboarding-steps" aria-label="Account setup: step 1 of 2">
-          <span className="current">01 Account details</span>
-          <span>02 Authenticator</span>
+          <span className="current">Account details</span>
+          <span>Authenticator</span>
         </div>
       )}
       <form onSubmit={submit} noValidate className="auth-form">
@@ -126,7 +105,7 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="you@yourpractice.com"
+            placeholder="you@hospital.com"
             required
             maxLength={254}
             aria-invalid={!!fields.email}
@@ -178,10 +157,8 @@ export function CredentialsForm({ mode }: { mode: 'login' | 'signup' }) {
         </button>
       </form>
       <div className="auth-switch">
-        {signup ? 'Already have an account?' : 'New to the workspace?'}{' '}
-        <Link href={signup ? '/login' : '/signup'}>
-          {signup ? 'Log in' : 'Join with an invitation'} <ArrowRight size={13} />
-        </Link>
+        {signup ? 'Already have an account?' : 'Have an invitation?'}{' '}
+        <Link href={signup ? '/login' : '/signup'}>{signup ? 'Log in' : 'Create account'}</Link>
       </div>
     </>
   );
