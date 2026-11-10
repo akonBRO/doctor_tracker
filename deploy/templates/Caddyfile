@@ -1,0 +1,60 @@
+{
+	admin off
+	persist_config off
+	auto_https disable_redirects
+	grace_period 20s
+	log default {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request delete
+				resp_headers delete
+			}
+		}
+	}
+	servers {
+		timeouts {
+			read_header 10s
+			read_body 30s
+			write 60s
+			idle 60s
+		}
+	}
+}
+
+http://:__HTTP_PORT__ {
+	@canonical expression `__HTTP_HOST_EXPRESSION__`
+	handle @canonical {
+		redir __HTTPS_ORIGIN__{uri} 308
+	}
+	handle {
+		respond "Unrecognized host" 421
+	}
+}
+
+__HTTPS_ORIGIN__ {
+	__TLS_DIRECTIVE__
+	@unrecognized expression `__HTTPS_HOST_EXPRESSION__`
+	respond @unrecognized "Unrecognized host" 421
+	request_body {
+		max_size 64KiB
+	}
+	reverse_proxy __WEB_UPSTREAM__ {
+		header_up Host __HTTPS_AUTHORITY__
+		header_up X-Forwarded-Host __HTTPS_AUTHORITY__
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-For {remote_host}
+		header_up -Forwarded
+		transport http {
+			dial_timeout 3s
+			response_header_timeout 30s
+		}
+	}
+}
+
+# A named HTTPS site's host matcher does not cover other HTTP authorities.
+# Reject those requests explicitly on the same TLS listener.
+https://:__HTTPS_PORT__ {
+	respond "Unrecognized host" 421
+}

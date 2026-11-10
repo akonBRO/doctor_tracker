@@ -28,6 +28,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: node scripts/test-e2e.mjs tests/e2e/quality.spec.ts --project=desktop
-      - run: npm run test:operations
+      - run: npm run test:infrastructure
+      - run: bash scripts/verify-systemd.sh
       - run: npm audit --audit-level=moderate
       - run: npm audit --omit=dev --audit-level=moderate

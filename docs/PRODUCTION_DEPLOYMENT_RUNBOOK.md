@@ -1,6 +1,63 @@
 # Production deployment and recovery runbook
 
-**Release is not authorized by a successful build, push or CI run.** This stage performs no deployment. The owner must approve the concrete host/domain/edge/secrets/backup plan and the intended release commit before an operator changes infrastructure or production services.
+**Release is not authorized by a successful build, push or CI run.** Stage 7 Phase A performs no deployment. The owner must approve the concrete host/domain/edge/secrets/backup plan and the intended release commit before an operator changes infrastructure or production services.
+
+Stage 7 adds a concrete [infrastructure proposal and environment inventory](PRODUCTION_INFRASTRUCTURE.md), [backup/recovery runbook](BACKUP_RECOVERY_RUNBOOK.md), [verification evidence](STAGE7_PRODUCTION_DEPLOYMENT.md) and updated [approval gate](DEPLOYMENT_READINESS.md). Those documents govern the proposed native Caddy/systemd setup; Stage 6 material below retains the application-level operational contract.
+
+## Serialized native release and rollback
+
+**Phase B only, after explicit approval.** The [infrastructure preparation](PRODUCTION_INFRASTRUCTURE.md#approved-host-preparation-and-release-commands) must be complete, with a built, verified, root-owned release and separately supplied secrets. The source package alone is not deployable. Record the full SHA, source/build/lockfile hashes, exact Node/npm/OS/Caddy versions, non-secret origins, prior release target, environment version identifiers, CI URL, operator and approval. Never record secret values.
+
+Prepare the source package locally without deploying:
+
+```sh
+npm run release:prepare -- --commit FULL_40_CHARACTER_COMMIT_SHA --out tmp/approved-release
+```
+
+The command refuses short revisions, private/generated tracked paths, symlinks/submodules and existing output files. Check the resulting `SHA256SUMS` and manifest independently. Packaging is a guarded Git source archive, not a content-aware secret scanner or deployment approval. Review the staged diff/history separately. No artifacts or secrets are uploaded by this command.
+
+Propose a **5–15 minute maintenance window for an already prepared release**, subject to measured host rehearsal and owner approval. Initial host/DNS/backup setup can take longer. There is no zero-downtime claim: public traffic is closed while old services stop and the new release is checked. With memory rate stores, restarts reset budgets; no overlapping API process is allowed even briefly.
+
+Approved operator sequence:
+
+1. Confirm backups, recoverable MFA key, incident contact, previous compatible build/config and rollback decision. Check free disk/RAM and that the new artifact has final approved origins, not fixture rewrites. Verify no other API process/host is running. Preserve current data; Stage 7 has no migration.
+2. Announce the approved window. Stop public ingress before stopping the web/API. Preserve sanitized lifecycle logs and confirm successful API drain/exit rather than accepting a timeout or forced kill as success.
+
+```sh
+sudo systemctl stop doctor-tracker-edge
+sudo systemctl stop doctor-tracker-web
+sudo systemctl stop doctor-tracker-api
+```
+
+3. Verify all three units are inactive and only approved bindings exist. Record `readlink -f /opt/doctor-tracker/current` privately as the rollback target. Select the already verified new release with an atomic same-filesystem symlink switch. The explicit SHA must match approval and an existing root-owned directory:
+
+```sh
+RELEASE_SHA=FULL_40_CHARACTER_APPROVED_COMMIT_SHA
+test "${#RELEASE_SHA}" -eq 40
+case "$RELEASE_SHA" in *[!0-9a-f]*) exit 1 ;; esac
+test -d "/opt/doctor-tracker/releases/$RELEASE_SHA"
+test ! -e /opt/doctor-tracker/next
+test ! -L /opt/doctor-tracker/next
+sudo ln -s "/opt/doctor-tracker/releases/$RELEASE_SHA" /opt/doctor-tracker/next
+sudo mv -T /opt/doctor-tracker/next /opt/doctor-tracker/current
+sudo systemctl start doctor-tracker-api
+curl --fail --silent --show-error --max-time 5 http://127.0.0.1:4000/api/v1/health/ready
+```
+
+Run commands in a fail-fast operator shell. Allow bounded startup time; a failed curl does not authorize continuing. Inspect sanitized startup/index/config events. If a unit failed repeatedly, investigate before an intentional `systemctl reset-failed`; never loop unbounded restarts. Do not auto-prepare indexes to bypass startup failure.
+
+4. When private API readiness succeeds, start web; inspect private web readiness, then start the edge and verify public HTTPS with normal certificate validation. Run the complete manual smoke checklist below, including actual MFA/refresh/CSRF/CORS and independent client IP budgets. Do not add synthetic patients to a live clinical database without separate authorization.
+
+```sh
+sudo systemctl start doctor-tracker-web
+curl --fail --silent --show-error --output /dev/null --max-time 5 http://127.0.0.1:3000/
+sudo systemctl start doctor-tracker-edge
+```
+
+5. Stop/rollback on failed startup, auth/session errors, incompatible build/origins, persistent readiness/DB failure, new 5xx, memory exhaustion or failed smoke checks. Keep public traffic closed, stop new services in the same order, set RELEASE_SHA to the **previous approved compatible SHA**, repeat the guarded switch, then start one API/web/edge and verify again. Retain the failed artifact/logs for investigation. Preserve current database and MFA key; do not restore a snapshot for an ordinary code failure.
+6. Open the maintenance window only when acceptance checks pass; observe resource/DB/auth/5xx signals with the named owner. Record actual downtime and whether rollback succeeded. Enable boot startup after initial acceptance and verify actual host reboot recovery at an approved time. Check certificate renewal, alerts and backup restore before declaring production ready.
+
+No shell script, CI job or Git push in this repository invokes these service/DNS/cloud operations. The GitHub environments API returned zero configured environments during Phase A inspection; a future deployment workflow must add and verify reviewer protection instead of assuming it exists.
 
 ## Architecture and responsibility
 

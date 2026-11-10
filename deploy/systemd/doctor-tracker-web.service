@@ -1,0 +1,44 @@
+[Unit]
+Description=Doctor Tracker private Next.js frontend
+Wants=network-online.target
+After=network-online.target doctor-tracker-api.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=doctor-tracker-web
+Group=doctor-tracker-web
+WorkingDirectory=/opt/doctor-tracker/current/apps/web
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+EnvironmentFile=/etc/doctor-tracker/web.env
+ExecStart=/usr/bin/node /opt/doctor-tracker/current/node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=20
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectProc=invisible
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/opt/doctor-tracker/current/apps/web/.next/cache
+MemoryHigh=1024M
+MemoryMax=1536M
+TasksMax=256
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=doctor-tracker-web
+
+[Install]
+WantedBy=multi-user.target

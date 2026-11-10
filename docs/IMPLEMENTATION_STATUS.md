@@ -1,5 +1,31 @@
 # Implementation status
 
+## Stage 7 — concrete infrastructure preparation (Phase A)
+
+Prepared 10 November 2026 from clean synchronized `main` at `374634b568f758fcb79a64bf600caac309950c41`; the selected remote remains `akonBRO/doctor_tracker`. The prior exact-SHA Stage 6 Actions run 42696912283 was independently confirmed successful. No production provisioning, spending, DNS, real certificate issuance, GitHub environment/secret, Atlas operation, schema/model change or key rotation was performed. Developer environment files are preserved and privately fingerprinted.
+
+### Prepared and verified
+
+- Compared a single VPS, managed application hosting and containers using dated primary sources. Recommend DigitalOcean Singapore SGP1 4 GiB/2 vCPU, Ubuntu 24.04, Caddy → private Next → private Express → existing verified-TLS Atlas. Published VM $24/month plus proposed daily host backup $7.20 = $31.20 before Atlas/domain/tax/overages. Actual routing, sizing and provider checkout remain approval inputs.
+- Added review-only Caddy 2.11.9 and hardened systemd templates with separate non-root identities, root-only secret-file plan, bounded restarts/graceful stop and initial resource limits. No service is installed or started outside disposable fixtures. Managed Render rolling overlap conflicts with current memory rate stores; one API process and serialized maintenance releases remain mandatory.
+- Added explicit-SHA source packaging with archive/lockfile hashes and a manifest that states deployment is unauthorized. Private/generated tracked filenames, links/submodules and output overwrites fail closed. Local source packaging does not deploy, provide secrets or build real-domain runtime artifacts.
+- Extended the existing operational harness to use actual pinned Caddy and added numeric-only test resource samples. CI retains the full operational suite through this real proxy, plus systemd structural verification; no deployment workflow, permission or cloud credential is added.
+- Added fixed, sanitized rejection-action metadata for login/signup/MFA/refresh/logout, with privacy coverage. No authentication, authorization, MFA, CSRF, rate budget, patient/doctor data contract, UI, font, branding or screenshot changed.
+- Prepared the [Stage 7 delivery evidence](STAGE7_PRODUCTION_DEPLOYMENT.md), [infrastructure and complete secret/configuration inventory](PRODUCTION_INFRASTRUCTURE.md), [backup/recovery runbook](BACKUP_RECOVERY_RUNBOOK.md) and [serialized release/rollback](PRODUCTION_DEPLOYMENT_RUNBOOK.md#serialized-native-release-and-rollback). The [approval gate](DEPLOYMENT_READINESS.md) now names concrete missing owner inputs.
+
+### Verification and limits
+
+- Fresh baseline: **249/249** unit/integration tests. Final Stage 7: **259/259 in ten files**, 60.63s; all original coverage retained, nine preparation cases and one auth-log privacy case added.
+- Typecheck, lint, formatting and isolated production build passed. Full and production-only dependency audits: **zero vulnerabilities**. No runtime dependency or lockfile changed.
+- Real Caddy operational rehearsal: **16 local Windows checks passed**, retaining all prior operational checks. Linux CI additionally tests actual SIGINT (17 checks in that path); Windows forced cleanup is not POSIX signal evidence. Includes actual HTTPS auth/MFA/cookies/refresh/CSRF/CORS/CRUD/Bengali/analytics/logout, restored encrypted MFA login, DB outage recovery, source-map absence, canonical Host/redirect, forwarding spoof/rate-budget and edge failure-log checks.
+- WSL Ubuntu 24.04 unit syntax verification passed with actual Linux Caddy and an explicitly labeled executable stand-in for absent WSL Node. This does not prove cgroup/filesystem enforcement or runtime startup under systemd. CI checks with actual Node; real-host enforcement is a Phase B gate.
+- Node-only rehearsal resource samples: healthy source API 162.3 MiB peak / 608 ms sampled CPU, restored API 164.9 MiB / 624 ms, Next runtime 132.4 MiB / 640 ms; largest individual build-process peak 263.1 MiB. These short Windows observations exclude whole-host/edge/browser/database resources and are not capacity guarantees.
+- All **15 production E2E checks passed** at the five required widths. Dedicated 200/4,000 quality check: **one passed** (31.7s test / 38.3s runner), retaining exact Stage 5 asset sizes; observed API medians 9.34?41.87ms, not a production SLA. Development dashboard/Strict Mode: **three passed** at 1440/375/320px. A trace-proven picker focus race in the browser helper was synchronized without changing the UI or weakening validation. Existing screenshots remain unchanged; accessibility evidence is automated coverage rather than manual screen-reader certification.
+
+Public TLS/DNS, actual Atlas permissions/backup/PITR, protected durable backups, key escrow access, timed cloud restore, actual RPO/RTO, alert delivery, host hardening/reboot/resource enforcement and Bangladesh/Atlas routing remain **unverified**. Proposed RPO ≤1 hour / RTO ≤4 hours require owner acceptance and a successful isolated cloud drill. Host backup does not include Atlas. No production data or clinical workflow was used for testing.
+
+The user's Stage 7 section 17 requires a mandatory stop for explicit approval after safe preparation. The final handoff records the exact pushed SHA/CI run and source-archive identity. Phase B is not authorized by this repository update or its green checks. Earlier-stage records below are historical.
+
 ## Stage 6 — operational hardening and release preparation
 
 Implemented 9–10 November 2026 from `a623f0ae60235326c7d72f1e3d596f4796e57e8c`, initially clean and synchronized on `main`. This is repository readiness work. No application deployment, paid provisioning, DNS/hosting/GitHub-secret change, live credential rotation, Atlas seed/index/restore operation or schema migration was performed. Existing API/web environment contents are preserved and verified privately by SHA-256 comparison.

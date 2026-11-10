@@ -1,6 +1,28 @@
 # Deployment approval gate
 
-Stage 6 implements provider-independent operational safeguards and isolated verification. **No production deployment or infrastructure change has been performed or authorized.** A clean build, push or successful CI run is not deployment approval.
+Stage 7 Phase A prepares a concrete native deployment package on top of Stage 6 safeguards. **No production deployment or infrastructure change has been performed or authorized.** A clean build, push or successful CI run is not deployment approval. The user's Stage 7 instructions, section 17, require a separate deployment approval and mandatory stop here.
+
+## Stage 7 concrete approval record
+
+Recommended: DigitalOcean Basic regular **2 vCPU / 4 GiB / Singapore SGP1**, Ubuntu 24.04, pinned Caddy → private Next → private Express → existing Atlas. Published VM price $24/month; proposed daily host backup $7.20, **$31.20/month before Atlas, domain, tax and overages**, checked 10 November 2026. See dated sources and alternatives in [Production Infrastructure](PRODUCTION_INFRASTRUCTURE.md).
+
+| Approval item                 | Phase A result / answer still required                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Provider/account/billing      | Recommendation prepared; owner must identify the account, accept region/data location and spending limit. Nothing provisioned.                                                       |
+| Domain and DNS                | **Missing** exact hostname, zone access owner and intended records. No DNS changed.                                                                                                  |
+| TLS/renewal                   | Review-only Caddy template and local certificate tests; owner must supply contact, accept HSTS subdomain scope and assign renewal/expiry owner. Public issuance unperformed.         |
+| Release                       | Explicit full-SHA source archive + checksums and verification-only CI; owner must approve the final pushed SHA/CI and built artifact/config record. No deployment trigger.           |
+| Secret supply                 | Separate private vault-to-root-0600 files, separate runtime UIDs; owner must designate secure operator/vault and confirm recoverable **existing MFA key**. No values in chat/Git/CI. |
+| Atlas access                  | Actual tier/region/transaction capability, network restrictions, least-privileged account and existing indexes require private verification. No live changes performed.              |
+| Backup/PITR                   | **Unverified**; owner must choose funded capability, schedule/retention/region, backup operator and a successful isolated restore record. Host backup excludes Atlas.                |
+| RPO/RTO                       | Propose ≤1h / ≤4h; **not approved or achieved**. Reconcile with real capability and timed drill before release.                                                                      |
+| Processes/rate limits         | One API, serialized maintenance stop/start. No managed rolling overlap, PM2 cluster or CDN shortcut; shared stores required before scaling.                                          |
+| Host verification             | Unit syntax and local Caddy integration tests only. Actual filesystem/cgroup hardening, Node patch, firewall/IPv6, termination/reboot and resource headroom remain to verify.        |
+| Monitoring/operations         | Thresholds and procedures prepared; incident, TLS, patch and backup owners/alert destinations **unassigned**. No alert delivered.                                                    |
+| Privacy/clinical operations   | Owner must accept access, location, record retention/deletion and log/backup policy. Automated axe checks are not a manual accessibility or compliance certification.                |
+| Maintenance/rollback approval | Owner must approve operator, exact operations/window, prior compatible artifact and rollback/smoke procedure. Proposed prepared-release window 5–15 minutes is an estimate.          |
+
+Authoritative Stage 7 evidence: [delivery record](STAGE7_PRODUCTION_DEPLOYMENT.md), [infrastructure](PRODUCTION_INFRASTRUCTURE.md), [backup/recovery](BACKUP_RECOVERY_RUNBOOK.md), [serialized release/rollback](PRODUCTION_DEPLOYMENT_RUNBOOK.md#serialized-native-release-and-rollback). Do not close production conditions based on local fixtures.
 
 The canonical technical inventory and evidence are in [Stage 6 readiness](STAGE6_DEPLOYMENT_READINESS.md). The [Production Deployment Runbook](PRODUCTION_DEPLOYMENT_RUNBOOK.md) contains release, smoke, monitoring, backup/restore, rollback and incident procedures. [Implementation status](IMPLEMENTATION_STATUS.md) records actual commands/results; Stage 5 measurements remain in the [quality audit](STAGE5_QUALITY_AUDIT.md).
 

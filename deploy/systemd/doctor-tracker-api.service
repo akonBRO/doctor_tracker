@@ -1,0 +1,42 @@
+[Unit]
+Description=Doctor Tracker private API
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=doctor-tracker-api
+Group=doctor-tracker-api
+WorkingDirectory=/opt/doctor-tracker/current/apps/api
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/doctor-tracker/api.env
+ExecStart=/usr/bin/node /opt/doctor-tracker/current/apps/api/dist/server.js --require-production
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=20
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectProc=invisible
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryHigh=512M
+MemoryMax=768M
+TasksMax=128
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=doctor-tracker-api
+
+[Install]
+WantedBy=multi-user.target

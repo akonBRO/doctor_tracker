@@ -377,6 +377,9 @@ export async function patientsFlow(page: Page, info: TestInfo, database: MongoCl
   await page.getByLabel('Assigned doctor', { exact: true }).fill('Nadia');
   await page.getByRole('button', { name: /Dr. Nadia Rahman Cardiology/ }).click();
   const literal = '<img src=x onerror=alert(1)> Fixture';
+  // Selection restores focus on the next frame. Await that existing interaction
+  // before fill sends keyboard input to the next field.
+  await expect(page.getByLabel('Assigned doctor', { exact: true })).toBeFocused();
   await page.getByLabel('Patient name (English)', { exact: false }).fill(literal);
   await page.getByLabel('Condition', { exact: false }).fill('Browser literal text test');
   await page.getByLabel('Birth date or age', { exact: false }).selectOption('approximate');

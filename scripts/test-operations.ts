@@ -3,16 +3,17 @@
 import assert from 'node:assert/strict';
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { request as httpRequest } from 'node:http';
+import { request as httpRequest, get as httpGet } from 'node:http';
 import { createServer as httpsServer, get as httpsGet } from 'node:https';
 import { createServer as tlsServer } from 'node:tls';
 import { createServer as portProbe, connect } from 'node:net';
 import type { Duplex } from 'node:stream';
-import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, basename } from 'node:path';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { chromium, expect } from '@playwright/test';
@@ -20,25 +21,43 @@ import { generate } from 'otplib';
 import { loadConfig } from '../apps/api/src/config/env.js';
 import { connectDatabase, databaseModels } from '../apps/api/src/config/database.js';
 import { hashToken, randomToken, decryptSecret } from '../apps/api/src/utils/security.js';
+import { renderCaddy, caddyBinary } from './lib/infrastructure.js';
 
 const { MongoClient, BSON } = createRequire(import.meta.url)('mongodb') as typeof import('mongodb');
 const children = new Set<ChildProcess>();
 const sockets = new Set<Duplex>();
 const tlsSockets = new Set<Duplex>();
 const passed: string[] = [];
+const useCaddy = process.argv.includes('--caddy');
+let profileDirectory: string | undefined;
 const pass = (name: string) => {
   passed.push(name);
   process.stdout.write(`PASS ${name}\n`);
 };
 const delay = (ms: number) => new Promise((done) => setTimeout(done, ms));
-function child(command: string, args: string[], env: NodeJS.ProcessEnv, cwd = process.cwd()) {
-  const processChild = spawn(command, args, {
-    cwd,
-    env,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
-    detached: process.platform !== 'win32',
-  });
+function child(
+  command: string,
+  args: string[],
+  env: NodeJS.ProcessEnv,
+  cwd = process.cwd(),
+  role = 'worker',
+) {
+  const nodeProfile = command === process.execPath && profileDirectory;
+  const processChild = spawn(
+    command,
+    nodeProfile
+      ? ['--import', pathToFileURL(resolve('scripts/operations-resource-probe.mjs')).href, ...args]
+      : args,
+    {
+      cwd,
+      env: nodeProfile
+        ? { ...env, OPERATIONS_PROFILE_DIR: profileDirectory, OPERATIONS_PROFILE_ROLE: role }
+        : env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      detached: process.platform !== 'win32',
+    },
+  );
   let output = '';
   processChild.stdout!.on('data', (value) => {
     output += String(value);
@@ -84,11 +103,16 @@ async function main() {
   await requirePort(3100);
   await requirePort(4100);
   const temp = await mkdtemp(join(tmpdir(), 'doctor-tracker-operations-'));
+  if (useCaddy) {
+    await mkdir('tmp/stage7', { recursive: true });
+    profileDirectory = await mkdtemp(resolve('tmp/stage7/resources-'));
+  }
   let database: MongoMemoryReplSet | undefined;
   let client: InstanceType<typeof MongoClient> | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   let edge: ReturnType<typeof httpsServer> | undefined;
   let bridge: ReturnType<typeof tlsServer> | undefined;
+  let proxy: ReturnType<typeof child> | undefined;
   try {
     const openssl =
       process.env.TEST_OPENSSL ??
@@ -174,38 +198,83 @@ async function main() {
     assert(replicaSetName);
     const tlsUri = (name: string) =>
       `mongodb://127.0.0.1:${bridgePort}/${name}?tls=true&tlsCAFile=${encodeURIComponent(certFile)}&replicaSet=${encodeURIComponent(replicaSetName)}&directConnection=true`;
-    edge = httpsServer({ key, cert }, (req, res) => {
-      const upstream = httpRequest(
-        {
-          host: '127.0.0.1',
-          port: 3100,
-          path: req.url,
-          method: req.method,
-          headers: {
-            ...req.headers,
-            'x-forwarded-for': req.socket.remoteAddress,
-            'x-forwarded-proto': 'https',
-            'x-forwarded-host': req.headers.host,
-          },
-        },
-        (reply) => {
-          res.writeHead(reply.statusCode ?? 502, reply.headers);
-          reply.pipe(res);
-        },
-      );
-      upstream.on('error', () => {
-        if (!res.headersSent) res.writeHead(502);
-        res.end();
+    let origin: string;
+    let redirectOrigin: string | undefined;
+    if (useCaddy) {
+      const freePort = async () => {
+        const probe = portProbe();
+        probe.listen(0, '127.0.0.1');
+        await once(probe, 'listening');
+        const port = (probe.address() as { port: number }).port;
+        await new Promise<void>((done) => probe.close(() => done()));
+        return port;
+      };
+      const httpsPort = await freePort();
+      const httpPort = await freePort();
+      // Use a DNS SAN so clients send SNI, matching the production hostname path.
+      origin = `https://localhost:${httpsPort}`;
+      redirectOrigin = `http://localhost:${httpPort}`;
+      const configuration = await renderCaddy({
+        origin,
+        httpPort,
+        webUpstream: '127.0.0.1:3100',
+        certificate: { cert: certFile, key: keyFile },
       });
-      req.pipe(upstream);
-    });
-    edge.on('connection', (socket) => {
-      sockets.add(socket);
-      socket.on('close', () => sockets.delete(socket));
-    });
-    edge.listen(0, '127.0.0.1');
-    await once(edge, 'listening');
-    const origin = `https://127.0.0.1:${(edge.address() as { port: number }).port}`;
+      const configFile = join(temp, 'Caddyfile');
+      await writeFile(configFile, configuration);
+      const binary = await caddyBinary();
+      const proxyEnv = {
+        ...process.env,
+        XDG_DATA_HOME: join(temp, 'caddy-data'),
+        XDG_CONFIG_HOME: join(temp, 'caddy-config'),
+      };
+      execFileSync(binary, ['validate', '--config', configFile, '--adapter', 'caddyfile'], {
+        stdio: 'pipe',
+        env: proxyEnv,
+        windowsHide: true,
+      });
+      proxy = child(binary, ['run', '--config', configFile, '--adapter', 'caddyfile'], proxyEnv);
+      await poll(
+        async () =>
+          proxy!.process.exitCode === null &&
+          proxy!.output().includes('serving initial configuration'),
+        'owned Caddy fixture ready',
+      );
+      pass('pinned Caddy syntax and temporary-certificate startup; no public certificate request');
+    } else {
+      edge = httpsServer({ key, cert }, (req, res) => {
+        const upstream = httpRequest(
+          {
+            host: '127.0.0.1',
+            port: 3100,
+            path: req.url,
+            method: req.method,
+            headers: {
+              ...req.headers,
+              'x-forwarded-for': req.socket.remoteAddress,
+              'x-forwarded-proto': 'https',
+              'x-forwarded-host': req.headers.host,
+            },
+          },
+          (reply) => {
+            res.writeHead(reply.statusCode ?? 502, reply.headers);
+            reply.pipe(res);
+          },
+        );
+        upstream.on('error', () => {
+          if (!res.headersSent) res.writeHead(502);
+          res.end();
+        });
+        req.pipe(upstream);
+      });
+      edge.on('connection', (socket) => {
+        sockets.add(socket);
+        socket.on('close', () => sockets.delete(socket));
+      });
+      edge.listen(0, '127.0.0.1');
+      await once(edge, 'listening');
+      origin = `https://127.0.0.1:${(edge.address() as { port: number }).port}`;
+    }
     const env: NodeJS.ProcessEnv = {
       ...process.env,
       ...secrets,
@@ -231,8 +300,8 @@ async function main() {
     assert.deepEqual(await inventory(), beforeIndexes);
     pass('production MongoDB TLS with explicit CA and existing-index verification');
     const apiPath = resolve('apps/api/dist/server.js');
-    const launchApi = (settings = env) =>
-      child(process.execPath, [apiPath, '--require-production'], settings);
+    const launchApi = (settings = env, role = 'api-source') =>
+      child(process.execPath, [apiPath, '--require-production'], settings, process.cwd(), role);
     for (const invalid of [
       { NODE_ENV: 'development' },
       { WEB_CONCURRENCY: '2' },
@@ -240,6 +309,7 @@ async function main() {
     ]) {
       const rejected = launchApi({ ...env, ...invalid });
       assert.equal((await rejected.done).code, 1);
+      assert(rejected.output().includes('configuration_invalid'));
       assert(
         !rejected.output().includes('unsafe@') && !rejected.output().includes(secrets.JWT_SECRET),
       );
@@ -279,7 +349,7 @@ async function main() {
     assert.equal((await bindFailure.done).code, 1);
     pass('production API startup, private binding, sanitized bind failure and readiness');
     const next = resolve('node_modules/next/dist/bin/next');
-    const build = child(process.execPath, [next, 'build'], env, resolve('apps/web'));
+    const build = child(process.execPath, [next, 'build'], env, resolve('apps/web'), 'web-build');
     assert.equal((await build.done).code, 0, 'Operational HTTPS web build failed');
     const mismatch = child(
       process.execPath,
@@ -295,6 +365,7 @@ async function main() {
       [next, 'start', '--hostname', '127.0.0.1', '--port', '3100'],
       env,
       resolve('apps/web'),
+      'web-runtime',
     );
     await poll(
       async () =>
@@ -313,6 +384,42 @@ async function main() {
       });
       req.once('error', reject);
     });
+    const secureRequest = (path: string, headers: Record<string, string> = {}) =>
+      new Promise<{ status: number; body: string }>((done, reject) => {
+        // Hold TLS SNI canonical while independently testing the HTTP Host policy.
+        const request = httpsGet(
+          `${origin}${path}`,
+          { ca: cert, headers, servername: new URL(origin).hostname },
+          (response) => {
+            let body = '';
+            response.on('data', (bytes) => {
+              body += String(bytes);
+            });
+            response.once('end', () => done({ status: response.statusCode ?? 0, body }));
+          },
+        );
+        request.once('error', reject);
+      });
+    if (useCaddy) {
+      assert.equal(
+        (await secureRequest('/api/v1/health/ready', { Host: 'unrecognized.example.test' })).status,
+        421,
+        'Unknown HTTP Host with canonical SNI must be rejected by Caddy.',
+      );
+      const redirected = await new Promise<{ status: number; location?: string }>(
+        (done, reject) => {
+          httpGet(`${redirectOrigin}/login`, (response) => {
+            response.resume();
+            response.once('end', () =>
+              done({ status: response.statusCode ?? 0, location: response.headers.location }),
+            );
+          }).once('error', reject);
+        },
+      );
+      assert.equal(redirected.status, 308);
+      assert.equal(redirected.location, `${origin}/login`);
+      pass('Caddy rejects unknown Host and redirects only to the fixed HTTPS origin');
+    }
     browser = await chromium.launch();
     const context = await browser.newContext({
       ignoreHTTPSErrors: true,
@@ -442,7 +549,7 @@ async function main() {
         'Windows cleanup; real SIGTERM remains a Linux CI check (shared lifecycle tested separately)',
       );
     }
-    api = launchApi({ ...env, MONGODB_URI: tlsUri('operations_restored') });
+    api = launchApi({ ...env, MONGODB_URI: tlsUri('operations_restored') }, 'api-restored');
     await poll(apiReady, 'restored API ready');
     await page.goto(`${origin}/login`);
     await page.getByLabel('Work email').fill('operations@example.test');
@@ -491,6 +598,41 @@ async function main() {
     pass('built browser/API artifacts contain no public source maps');
     await browser.close();
     browser = undefined;
+    if (useCaddy) {
+      let limited = false;
+      for (let index = 0; index <= 200; index++) {
+        const result = await secureRequest('/api/v1/auth/csrf', {
+          'X-Forwarded-For': `192.0.2.${index % 250}`,
+          'X-Forwarded-Proto': 'http',
+          'X-Forwarded-Host': 'unrecognized.example.test',
+          Forwarded: `for=192.0.2.${index % 250};proto=http`,
+        });
+        if (result.status === 429) {
+          limited = true;
+          break;
+        }
+        assert.equal(result.status, 200);
+      }
+      assert(limited, 'Forged forwarding headers must not split the client rate budget.');
+      assert.equal(
+        (await secureRequest('/api/v1/auth/csrf', { 'X-Forwarded-For': '198.51.100.2' })).status,
+        429,
+      );
+      pass('Caddy forwarding-header overwrite preserves one client rate budget under spoofing');
+      await stop(web.process);
+      const marker = 'SYNTHETIC_DO_NOT_LOG';
+      const failure = await secureRequest(`/patients/${marker}?token=${marker}`, {
+        Cookie: `session=${marker}`,
+        Authorization: marker,
+      });
+      assert.equal(failure.status, 502);
+      assert(!failure.body.includes(marker));
+      await delay(100);
+      assert(!proxy!.output().includes(marker));
+      pass(
+        'Caddy upstream failure is opaque and runtime logs omit request URL, headers and credentials',
+      );
+    }
     if (process.platform !== 'win32') {
       api.process.kill('SIGINT');
       assert.equal((await api.done).code, 0);
@@ -502,6 +644,32 @@ async function main() {
   } finally {
     await browser?.close();
     for (const processChild of children) await stop(processChild);
+    if (profileDirectory) {
+      const records = await Promise.all(
+        (await readdir(profileDirectory))
+          .filter((name) => name.endsWith('.json'))
+          .map(async (name) => JSON.parse(await readFile(join(profileDirectory!, name), 'utf8'))),
+      );
+      await writeFile(
+        'tmp/stage7/resource-profile.json',
+        JSON.stringify(
+          {
+            recordedAt: new Date().toISOString(),
+            conditions:
+              'Bounded disposable rehearsal; one-second numeric process samples plus exit snapshots; process peak RSS is not simultaneous whole-server RAM; Windows forced cleanup can leave last sampled values.',
+            records,
+          },
+          null,
+          2,
+        ),
+      );
+      for (const role of [...new Set(records.map((record) => String(record.role)))].sort()) {
+        const samples = records.filter((record) => record.role === role);
+        process.stdout.write(
+          `RESOURCE ${role}: processes=${samples.length}, largest individual peak RSS MiB=${(Math.max(...samples.map((record) => record.peakRssBytes)) / 1048576).toFixed(1)}, largest sampled CPU ms=${Math.max(...samples.map((record) => record.userCpuMs + record.systemCpuMs)).toFixed(0)}\n`,
+        );
+      }
+    }
     for (const socket of [...sockets, ...tlsSockets]) socket.destroy();
     if (edge?.listening) await new Promise<void>((done) => edge!.close(() => done()));
     if (bridge?.listening) await new Promise<void>((done) => bridge!.close(() => done()));

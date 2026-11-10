@@ -81,6 +81,10 @@ See [Doctor Management](DOCTOR_MANAGEMENT.md) for current endpoints, measured in
 
 ## Production deployment contract
 
+Stage 7's [native infrastructure proposal](PRODUCTION_INFRASTRUCTURE.md) preserves this contract. Caddy accepts the canonical host and overwrites forwarding headers; fixed Caddy → Next → API ingress uses two trusted hops with private loopback services. Separate web/API UIDs and root-only secret files limit secret exposure. Runtime edge logging removes request/response-header objects; public access logging remains disabled. A real Caddy fixture checks spoofed forwarding headers cannot split rate budgets and upstream-failure logs omit a sensitive sentinel. Actual host/proxy isolation still requires verification after approval.
+
+Rejected login, invitation signup, MFA verification/recovery, refresh and logout events now log only a fixed action name, error code, status and request ID. They contain no account identifier, request URL, body, cookie, token or clinical input. Routine unauthenticated `/me` checks are excluded. Existing auth, MFA, CSRF and rate-limit behavior is unchanged. Monitoring owners/alert delivery are not configured by these events.
+
 1. Use a persistent, backed-up Atlas cluster or replica set with TLS and a least-privileged database account. Keep connection strings in your secret manager.
 2. Terminate HTTPS at a trusted edge and expose only the frontend origin; route `/api/v1/*` to the independent API. Do not make health/auth response data cacheable. Match `WEB_ORIGIN` and `APP_ORIGIN` exactly; set `COOKIE_SECURE=true`.
 3. If an edge proxy is present, set `TRUST_PROXY_HOPS` to the actual fixed proxy count, and have the edge overwrite untrusted forwarded headers. Keep the API unreachable through bypass paths. Never use arbitrary `trust proxy=true`.

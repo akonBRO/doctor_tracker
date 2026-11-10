@@ -180,7 +180,7 @@ Stage 5 retains the approved light UI and fixes reproduced availability, transpo
 
 The empty dashboard conditionally loads its chart: local cold-context JS transfer fell from 296,809 to 193,275 bytes. The complete self-hosted Bengali font now uses WOFF2, reducing observed font transfer from 305,670 to 244,604 bytes without glyph subsetting. Populated chart transfer has a small split-module overhead; API timing results were mixed. Existing indexes, offset pagination and no-store/freshness policy are retained on measured evidence.
 
-See the [Stage 5 quality audit](docs/STAGE5_QUALITY_AUDIT.md) for page review, reproducible 200-doctor/4,000-patient measurements, all 20 security controls, accessibility and explicit limits. [Deployment Readiness](docs/DEPLOYMENT_READINESS.md) defines Stage 6 requirements. No deployment was performed and no persistent Atlas data or environment file was changed.
+See the [Stage 5 quality audit](docs/STAGE5_QUALITY_AUDIT.md) for page review, reproducible 200-doctor/4,000-patient measurements, all 20 security controls, accessibility and explicit limits. [Deployment Readiness](docs/DEPLOYMENT_READINESS.md) defines the current production approval requirements. No deployment was performed and no persistent Atlas data or environment file was changed.
 
 ## Operational readiness - Stage 6
 
@@ -188,7 +188,17 @@ Production startup verifies indexes without creating them, requires safe TLS/ori
 
 Plain `npm run typecheck` uses a development-only route-type generation child, so unchanged local HTTP settings need no deployment configuration for typing. Production build/start still enforce the release validation rules.
 
-The [Stage 6 evidence](docs/STAGE6_DEPLOYMENT_READINESS.md) explains the implemented safeguards and isolated HTTPS/MongoDB TLS/restore rehearsal. Use the [approval gate](docs/DEPLOYMENT_READINESS.md) and [production runbook](docs/PRODUCTION_DEPLOYMENT_RUNBOOK.md) for host/domain/TLS/secrets/backup decisions and explicit release approval. Push/CI never deploys this application. Existing Atlas data and environment files remain untouched.
+The [Stage 6 evidence](docs/STAGE6_DEPLOYMENT_READINESS.md) explains the application safeguards. [Stage 7 Phase A](docs/STAGE7_PRODUCTION_DEPLOYMENT.md) adds a concrete [Caddy/systemd infrastructure proposal](docs/PRODUCTION_INFRASTRUCTURE.md), guarded source-release packaging and a [backup/recovery runbook](docs/BACKUP_RECOVERY_RUNBOOK.md). Use the [approval gate](docs/DEPLOYMENT_READINESS.md) and [production runbook](docs/PRODUCTION_DEPLOYMENT_RUNBOOK.md) before any paid provisioning, DNS, Atlas change or deployment. Push/CI only verifies the application. Existing Atlas data and environment files remain untouched.
+
+Infrastructure preparation commands (no service installation or deployment):
+
+```sh
+npm run test:infrastructure
+npm run infra:render -- --origin https://APPROVED_HOSTNAME --email APPROVED_TLS_CONTACT --out tmp/infrastructure-review
+npm run release:prepare -- --commit FULL_40_CHARACTER_COMMIT_SHA --out tmp/release-review
+```
+
+On Windows PowerShell, use `npm.cmd` instead of `npm` for commands forwarding valued `--flags`; the PowerShell wrapper can consume them. Replace placeholders with reviewed public metadata. The infrastructure test downloads checksum-pinned Caddy 2.11.9 into ignored `tmp/tools`, then runs the full disposable operational rehearsal through that actual proxy with temporary TLS. It requires the same Chromium/OpenSSL prerequisites as `test:operations`; it never requests a public certificate. Rendering/packaging refuse overwrites and do not supply production secrets. A source package must still be built on the approved Linux runtime with real origins before deployment. Linux CI also runs `bash scripts/verify-systemd.sh` for structural unit verification without installing or starting services. **Phase A stops for explicit infrastructure and exact-release approval.**
 
 ## Scripts and verification
 
@@ -238,7 +248,7 @@ Actual verification results and any unfinished checks are recorded in [IMPLEMENT
 
 ## Visual evidence
 
-The existing Stage 5 screenshots come from actual production-browser tests. Stage 6 leaves them unchanged because the UI is unchanged. Set `E2E_CAPTURE_SCREENSHOTS=true` only when intentionally regenerating images after a UI change. All identities and patient/doctor records shown are explicitly disposable test fixtures. MFA setup keys are masked before capture. No Atlas data is used.
+The existing Stage 5 screenshots come from actual production-browser tests. Stages 6–7 leave them unchanged because the UI is unchanged. Set `E2E_CAPTURE_SCREENSHOTS=true` only when intentionally regenerating images after a UI change. All identities and patient/doctor records shown are explicitly disposable test fixtures. MFA setup keys are masked before capture. No Atlas data is used.
 
 | Desktop                                                                                            | Mobile                                                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -253,6 +263,6 @@ Patient screenshots: [directory](docs/screenshots/patients-desktop.png), [creati
 
 ## Current boundaries
 
-Stages 1-6 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, aggregate dashboard reporting and measured quality refinements plus operational release safeguards. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
+Stages 1-7 provide authentication/MFA, redesigned public/auth/workspace screens, doctor creation and directory management, patient CRUD under validated doctors, aggregate dashboard reporting and measured quality refinements plus operational release safeguards. Doctors and patients are managed records, not login accounts. Doctor editing/deletion, patient reassignment, appointments, prescriptions and billing are outside this stage. Optional medical-history text provides registration context without introducing an EHR workflow.
 
-Production deployment still requires explicit owner approval and the documented hosting/security/backup inputs. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stages 4-6 use disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.
+Production deployment still requires explicit owner approval and the documented hosting/security/backup inputs. Atlas connectivity was verified read-only during the original Stage 3 delivery; Stages 4-7 use disposable verification databases only. No deployment, persistent database installation, email delivery, uploads, webhooks, password reset or MFA reset was performed. In-memory rate limits support one API instance; a shared store is required before scaling. Existing Atlas configuration and administrator data are preserved.

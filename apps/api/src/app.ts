@@ -201,7 +201,7 @@ export async function createApp(config: Config, state: RuntimeState = { draining
   app.use((_req, _res, next) =>
     next(new AppError(404, 'NOT_FOUND', 'This endpoint does not exist.')),
   );
-  const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+  const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
     const requestId = res.locals.requestId as string;
     if (error instanceof ZodError) {
       res.status(422).json({
@@ -215,6 +215,23 @@ export async function createApp(config: Config, state: RuntimeState = { draining
       return;
     }
     if (error instanceof AppError) {
+      const actions: Record<string, string> = {
+        '/api/v1/auth/login': 'login',
+        '/api/v1/auth/signup': 'invitation_signup',
+        '/api/v1/auth/mfa/verify': 'mfa_verification',
+        '/api/v1/auth/mfa/recovery': 'mfa_recovery',
+        '/api/v1/auth/refresh': 'session_refresh',
+        '/api/v1/auth/logout': 'logout',
+      };
+      const action = actions[req.path];
+      if (action && error.status >= 400 && error.status < 500)
+        logger.warn({
+          event: 'authentication_rejected',
+          action,
+          code: error.code,
+          status: error.status,
+          requestId,
+        });
       res
         .status(error.status)
         .json({ error: { code: error.code, message: error.message, requestId } });
